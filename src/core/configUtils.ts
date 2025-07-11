@@ -93,7 +93,7 @@ export function getCurrentModel(prefs: any): string {
   const isCustomModelValid = Boolean(prefs.customModel && prefs.customModel.trim().length > 0);
   const globalModelName = isCustomModelValid
     ? prefs.customModel.toLowerCase().trim()
-    : prefs.defaultModel || "gemini-2.5-flash-preview-04-17";
+    : prefs.defaultModel || "gemini-2.5-flash";
   const commandModel = prefs.commandModel || "default";
   return commandModel === "default" ? globalModelName : commandModel;
 }

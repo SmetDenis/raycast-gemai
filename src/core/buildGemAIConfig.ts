@@ -10,6 +10,12 @@ import {
 } from "./configUtils";
 
 const thinkingModels = [
+  // Stable models (January 2025)
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-pro",
+  
+  // Legacy models (for backward compatibility)
   "gemini-2.5-flash-preview-04-17",
   "gemini-2.5-flash-preview-04-17__thinking",
   "gemini-2.5-pro-preview-05-06",

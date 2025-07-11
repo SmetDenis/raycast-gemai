@@ -3,3 +3,609 @@ description:
 globs:
 alwaysApply: false
 ---
+# Command Development Guide
+
+## Command Architecture Overview
+
+### Command Types & Categories
+1. **Text Processing Commands**: Grammar, Professional, Friend, Shorter, Longer, Rephraser
+2. **Analysis Commands**: Ask AI, Explainer, Summarizer, Count Tokens
+3. **Translation Commands**: Translator with multi-language support
+4. **Interactive Commands**: Chat Room with persistent context
+5. **Vision Commands**: Screenshot → Markdown/Explain/Translate
+6. **Utility Commands**: History, Stats
+
+### Command File Structure
+Each command follows a consistent pattern in `src/[commandName].ts`:
+
+```typescript
+// Standard imports
+import { buildAIConfig } from "./core/buildAIConfig";
+import { CMD_[COMMAND], getCmd } from "./core/commands";
+import GemAI from "./core/gemai";
+import { RaycastProps } from "./core/types";
+
+// Optional: Special imports for specific functionality
+import { getPreferenceValues } from "@raycast/api";
+import makeScreenshot from "./core/makeScreenshot";
+
+export default function CommandName(props: RaycastProps) {
+  // Command-specific logic here
+  
+  const fallbackPrompt = "Your system prompt here...";
+  
+  const aiConfig = buildAIConfig(getCmd(CMD_COMMAND).id, props, fallbackPrompt);
+  aiConfig.ui.placeholder = getCmd(CMD_COMMAND).ui_placeholder || "Default placeholder...";
+  
+  return GemAI(aiConfig);
+}
+```
+
+## Adding New Commands
+
+### Step 1: Define Command Constants
+In [commands.ts](mdc:src/core/commands.ts):
+
+```typescript
+// Add command constant
+export const CMD_NEW_COMMAND = "newCommand";
+
+// Add to allCommands object
+const allCommands: Record<string, GemAiCommand> = {
+  // ... existing commands
+  [CMD_NEW_COMMAND]: {
+    id: CMD_NEW_COMMAND,
+    name: "New Command",
+    description: "Description of what this command does.",
+    ui_placeholder: "Enter text for processing...",
+  },
+};
+```
+
+### Step 2: Create Command File
+Create `src/newCommand.ts`:
+
+```typescript
+import { buildAIConfig } from "./core/buildAIConfig";
+import { CMD_NEW_COMMAND, getCmd } from "./core/commands";
+import GemAI from "./core/gemai";
+import { RaycastProps } from "./core/types";
+
+export default function NewCommand(props: RaycastProps) {
+  const fallbackPrompt = `
+    You are a specialized assistant for [specific task].
+    Your task is to [detailed description of the task].
+    
+    Guidelines:
+    - [Specific guideline 1]
+    - [Specific guideline 2]
+    - [Specific guideline 3]
+    
+    ALWAYS return only the processed result without explanations.
+  `;
+
+  const aiConfig = buildAIConfig(getCmd(CMD_NEW_COMMAND).id, props, fallbackPrompt);
+  aiConfig.ui.placeholder = getCmd(CMD_NEW_COMMAND).ui_placeholder || "Enter text...";
+  
+  return GemAI(aiConfig);
+}
+```
+
+### Step 3: Update Package Generator
+In [generate-package.ts](mdc:generate-package.ts), add to the commands array:
+
+```typescript
+const commands = [
+  // ... existing commands
+  {
+    name: "newCommand",
+    title: "New Command",
+    description: "Description of what this command does.",
+    mode: "view",
+    preferences: [
+      // Standard preferences for AI commands
+      {
+        name: "commandModel",
+        title: "Model for the command",
+        description: "Specifies the model utilized for this command.",
+        type: "dropdown",
+        required: false,
+        default: "default",
+        data: MODEL_DROPDOWN_OPTIONS,
+      },
+      {
+        name: "temperature",
+        title: "Temperature",
+        description: "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
+        type: "textfield",
+        required: false,
+        default: "0.1",
+      },
+      {
+        name: "promptFile",
+        title: "Markdown file with system prompt",
+        description: "The system prompt to use for this command.",
+        type: "textfield",
+        required: false,
+        default: "NewCommand.md",
+      },
+    ],
+  },
+];
+```
+
+### Step 4: Regenerate Package
+```bash
+npx ts-node generate-package.ts
+```
+
+## Command Types & Patterns
+
+### 1. Text Processing Commands
+For commands that transform text (Grammar, Professional, etc.):
+
+```typescript
+export default function TextProcessor(props: RaycastProps) {
+  const fallbackPrompt = `
+    Transform the following text by [specific transformation].
+    
+    Requirements:
+    - Preserve the original meaning and intent
+    - Maintain the same tone/style (unless specifically changing it)
+    - Keep the same format and structure
+    - Return ONLY the transformed text
+  `;
+
+  const aiConfig = buildAIConfig(getCmd(CMD_TEXT_PROCESSOR).id, props, fallbackPrompt);
+  aiConfig.ui.placeholder = "Enter text to transform...";
+  
+  return GemAI(aiConfig);
+}
+```
+
+### 2. Analysis Commands
+For commands that analyze or explain content:
+
+```typescript
+export default function Analyzer(props: RaycastProps) {
+  const fallbackPrompt = `
+    Analyze the following content and provide [specific type of analysis].
+    
+    Structure your response with:
+    - Brief overview
+    - Key points (use bullet points)
+    - Conclusion or summary
+    
+    Be concise but thorough.
+  `;
+
+  const aiConfig = buildAIConfig(getCmd(CMD_ANALYZER).id, props, fallbackPrompt);
+  aiConfig.ui.placeholder = "Enter content to analyze...";
+  aiConfig.ui.useSelected = true; // Allow using selected text
+  
+  return GemAI(aiConfig);
+}
+```
+
+### 3. Translation Commands
+For commands that handle language translation:
+
+```typescript
+export default function Translator(props: RaycastProps) {
+  const prefs = getPreferenceValues();
+  const primaryLang = prefs.primaryLanguage.trim().toUpperCase();
+  const secondaryLang = prefs.secondaryLanguage.trim().toUpperCase();
+  
+  const fallbackPrompt = `
+    Translate the text between ${primaryLang} and ${secondaryLang}.
+    
+    Rules:
+    - If text is in ${primaryLang}, translate to ${secondaryLang}
+    - If text is in ${secondaryLang}, translate to ${primaryLang}
+    - Preserve meaning, tone, and formatting
+    - Return ONLY the translated text
+  `;
+
+  const aiConfig = buildAIConfig(getCmd(CMD_TRANSLATOR).id, props, fallbackPrompt);
+  aiConfig.ui.placeholder = "Enter text to translate...";
+  
+  return GemAI(aiConfig);
+}
+```
+
+### 4. Vision Commands (Screenshot-based)
+For commands that process screenshots:
+
+```typescript
+export default function ScreenshotProcessor(props: RaycastProps) {
+  const fallbackPrompt = `
+    Process the provided screenshot and [specific task].
+    
+    Instructions:
+    - Analyze the visual content carefully
+    - [Specific processing instructions]
+    - Return the result in the requested format
+  `;
+
+  const aiConfig = buildAIConfig(getCmd(CMD_SCREENSHOT_PROCESSOR).id, props, fallbackPrompt);
+  aiConfig.ui.placeholder = "Additional instructions (optional)...";
+  aiConfig.ui.useSelected = false; // Screenshots don't use selected text
+  
+  return makeScreenshot(props, true, aiConfig); // true = allow selection
+}
+```
+
+### 5. Interactive Commands (Chat-based)
+For commands that maintain conversation context:
+
+```typescript
+import ChatRoom from "./core/chatroom";
+
+export default function InteractiveCommand(props: RaycastProps) {
+  const aiConfig = buildAIConfig(getCmd(CMD_INTERACTIVE).id, props);
+  
+  const fallbackPrompt = `
+    You are a specialized assistant for [specific domain].
+    Maintain context throughout the conversation.
+    
+    Guidelines:
+    - [Specific behavioral guidelines]
+    - Ask clarifying questions when needed
+    - Provide helpful and accurate responses
+  `;
+
+  aiConfig.model.systemPrompt = fallbackPrompt;
+  aiConfig.ui.placeholder = "Start conversation...";
+  aiConfig.ui.useSelected = false;
+  aiConfig.ui.allowPaste = true;
+  
+  return ChatRoom({ aiConfig });
+}
+```
+
+## Prompt Engineering Best Practices
+
+### System Prompt Structure
+```typescript
+const fallbackPrompt = `
+  # Role Definition
+  You are a [specific role] with expertise in [domain].
+  
+  # Task Description
+  Your task is to [detailed task description].
+  
+  # Guidelines
+  - [Specific guideline 1]
+  - [Specific guideline 2]
+  - [Specific guideline 3]
+  
+  # Output Format
+  - [Format specification]
+  - [Structure requirements]
+  
+  # Language Policy
+  [Language instructions if needed]
+  
+  # Response Rules
+  ALWAYS return only the [expected output] without explanations, introductions, or meta-commentary.
+`;
+```
+
+### Language Handling
+Commands are automatically categorized for language handling:
+
+- **Primary Language Commands**: Use user's configured primary language
+- **Auto-detect Commands**: Use the language of the input text
+
+Update [configUtils.ts](mdc:src/core/configUtils.ts) if your command needs specific language handling:
+
+```typescript
+export const actionsWithPrimaryLanguage = [
+  getCmd(CMD_ASK).id,
+  getCmd(CMD_EXPLAINER).id,
+  getCmd(CMD_NEW_COMMAND).id, // Add your command here
+  // ... other commands
+];
+```
+
+### Custom Prompt Files
+Users can override system prompts with custom Markdown files:
+
+1. **Default location**: `~/Documents/Prompts/Raycast/`
+2. **File naming**: `[CommandName].md` (e.g., `NewCommand.md`)
+3. **Structure**: Plain markdown with optional YAML frontmatter
+
+Example custom prompt file:
+```markdown
+---
+title: Custom New Command Prompt
+version: 1.0
+---
+
+# Custom System Prompt
+
+You are a specialized assistant with custom behavior.
+
+## Custom Guidelines
+- Follow these specific rules
+- Use this particular format
+- Apply these constraints
+
+Return only the processed result.
+```
+
+## UI Configuration Patterns
+
+### Standard UI Configuration
+```typescript
+const aiConfig = buildAIConfig(getCmd(CMD_COMMAND).id, props, fallbackPrompt);
+
+// Basic UI setup
+aiConfig.ui.placeholder = "Enter text...";
+aiConfig.ui.useSelected = true;  // Allow using selected text
+aiConfig.ui.allowPaste = true;  // Allow pasting content
+
+return GemAI(aiConfig);
+```
+
+### Screenshot Command UI
+```typescript
+const aiConfig = buildAIConfig(getCmd(CMD_SCREENSHOT).id, props, fallbackPrompt);
+
+// Screenshot-specific UI
+aiConfig.ui.placeholder = "Additional instructions (optional)...";
+aiConfig.ui.useSelected = false; // Screenshots don't use selected text
+
+return makeScreenshot(props, true, aiConfig); // true = allow area selection
+```
+
+### Chat Command UI
+```typescript
+const aiConfig = buildAIConfig(getCmd(CMD_CHAT).id, props, fallbackPrompt);
+
+// Chat-specific UI
+aiConfig.ui.placeholder = "Start conversation...";
+aiConfig.ui.useSelected = false;
+aiConfig.ui.allowPaste = true;
+
+return ChatRoom({ aiConfig });
+```
+
+## Command-Specific Preferences
+
+### Standard Preferences
+Every AI command should include these preferences:
+
+```typescript
+preferences: [
+  {
+    name: "commandModel",
+    title: "Model for the command",
+    description: "Specifies the model utilized for this command.",
+    type: "dropdown",
+    required: false,
+    default: "default",
+    data: MODEL_DROPDOWN_OPTIONS,
+  },
+  {
+    name: "temperature",
+    title: "Temperature",
+    description: "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
+    type: "textfield",
+    required: false,
+    default: "0.1", // Adjust based on command needs
+  },
+  {
+    name: "promptFile",
+    title: "Markdown file with system prompt",
+    description: "The system prompt to use for this command.",
+    type: "textfield",
+    required: false,
+    default: "CommandName.md",
+  },
+]
+```
+
+### Command-Specific Preferences
+Add additional preferences as needed:
+
+```typescript
+preferences: [
+  // ... standard preferences
+  {
+    name: "secondaryLanguage",
+    title: "Secondary Language",
+    description: "Second language for translation commands.",
+    type: "textfield",
+    default: "English",
+    required: true,
+  },
+  {
+    name: "outputFormat",
+    title: "Output Format",
+    description: "Preferred output format for the command.",
+    type: "dropdown",
+    required: false,
+    default: "markdown",
+    data: [
+      { title: "Markdown", value: "markdown" },
+      { title: "Plain Text", value: "text" },
+      { title: "JSON", value: "json" },
+    ],
+  },
+]
+```
+
+## Advanced Command Features
+
+### Argument Support
+For commands that accept quick arguments:
+
+```typescript
+// In generate-package.ts
+{
+  name: "commandName",
+  title: "Command Name",
+  description: "Command description",
+  mode: "view",
+  arguments: [
+    {
+      name: "query",
+      placeholder: "Quick query text",
+      type: "text",
+      required: false,
+    },
+  ],
+  preferences: [
+    // ... preferences
+  ],
+}
+```
+
+### File Attachment Support
+For commands that can process files:
+
+```typescript
+export default function FileProcessor(props: RaycastProps) {
+  const fallbackPrompt = "Process the attached file...";
+  
+  const aiConfig = buildAIConfig(getCmd(CMD_FILE_PROCESSOR).id, props, fallbackPrompt);
+  aiConfig.ui.placeholder = "Enter instructions for file processing...";
+  
+  // The GemAI component automatically handles file attachments
+  return GemAI(aiConfig);
+}
+```
+
+### Context Handling
+For commands that need special context handling:
+
+```typescript
+export default function ContextualCommand(props: RaycastProps) {
+  // Handle launch context (e.g., from other commands)
+  if (props?.launchContext?.attachmentFile && props?.launchContext?.gemAiConfig) {
+    const contextConfig = props.launchContext.gemAiConfig;
+    contextConfig.request.attachmentFile = props.launchContext.attachmentFile;
+    return GemAI(contextConfig);
+  }
+  
+  // Normal command flow
+  const fallbackPrompt = "Your system prompt...";
+  const aiConfig = buildAIConfig(getCmd(CMD_CONTEXTUAL).id, props, fallbackPrompt);
+  
+  return GemAI(aiConfig);
+}
+```
+
+## Testing New Commands
+
+### Manual Testing Checklist
+- [ ] Test with both Gemini and OpenAI models
+- [ ] Test with different temperature settings
+- [ ] Test with custom prompts
+- [ ] Test with selected text (if applicable)
+- [ ] Test with file attachments (if applicable)
+- [ ] Test with different languages
+- [ ] Verify token counting and cost calculation
+- [ ] Test error handling (invalid inputs, API errors)
+
+### Integration Testing
+```typescript
+// Test command integration
+async function testNewCommand() {
+  const mockProps: RaycastProps = {
+    arguments: { query: "test input" },
+    fallbackText: "test text",
+    launchType: "userInitiated",
+  };
+  
+  const result = await NewCommand(mockProps);
+  
+  // Verify command structure
+  expect(result).toBeDefined();
+  expect(result.props.aiConfig.request.actionName).toBe("newCommand");
+  expect(result.props.aiConfig.model.systemPrompt).toContain("specialized assistant");
+}
+```
+
+## Common Patterns & Anti-Patterns
+
+### ✅ Good Patterns
+```typescript
+// Clear, specific prompts
+const fallbackPrompt = `
+  Transform the text to be more professional while preserving meaning.
+  
+  Guidelines:
+  - Use formal language
+  - Maintain original structure
+  - Keep the same tone
+  
+  Return only the transformed text.
+`;
+
+// Proper UI configuration
+aiConfig.ui.placeholder = getCmd(CMD_COMMAND).ui_placeholder || "Fallback placeholder...";
+aiConfig.ui.useSelected = true; // When command can work with selected text
+
+// Consistent error handling
+return GemAI(aiConfig); // Let the universal system handle errors
+```
+
+### ❌ Anti-Patterns
+```typescript
+// Vague prompts
+const fallbackPrompt = "Make this better"; // ❌ Too vague
+
+// Hardcoded UI text
+aiConfig.ui.placeholder = "Enter text"; // ❌ Should use command definition
+
+// Direct AI API calls
+const response = await openai.chat.completions.create(...); // ❌ Bypass universal system
+
+// Missing error handling
+const result = await someOperation(); // ❌ No error handling
+```
+
+## Performance Considerations
+
+### Prompt Optimization
+- Keep prompts concise but specific
+- Use clear structure and formatting
+- Avoid redundant instructions
+- Test with different model types
+
+### Resource Management
+- Use appropriate temperature settings
+- Set reasonable token limits
+- Clean up temporary resources
+- Handle large inputs gracefully
+
+### User Experience
+- Provide clear placeholders
+- Use appropriate loading states
+- Handle errors gracefully
+- Provide helpful feedback
+
+## Security & Privacy
+
+### Input Validation
+```typescript
+// Validate inputs before processing
+if (!props.arguments?.query && !props.fallbackText) {
+  // Handle empty input gracefully
+  return GemAI(aiConfig); // UI will prompt for input
+}
+```
+
+### Sensitive Data Handling
+- Never log sensitive user inputs
+- Clean up temporary files
+- Respect user privacy settings
+- Follow Raycast security guidelines
+
+### API Key Security
+- Use the universal AI configuration system
+- Never hardcode API keys
+- Handle authentication errors gracefully
+- Validate keys before use

@@ -3,3 +3,155 @@ description:
 globs:
 alwaysApply: false
 ---
+# Raycast GemAI - Project Structure & Architecture
+
+## Project Overview
+**Raycast GemAI** is a universal AI assistant extension for Raycast that supports both Google Gemini and OpenAI models. It provides 20+ AI-powered commands for text processing, translation, summarization, code explanation, and image analysis through screenshots.
+
+## Core Architecture
+
+### Universal AI Provider System
+The project uses a **universal AI provider architecture** that abstracts both Gemini and OpenAI behind a single interface:
+
+- **Single Interface**: [AIConfig](mdc:src/core/types.ts) interface abstracts both providers
+- **Auto-switching**: Intelligent model switching (e.g., o1-series → GPT-4o for vision tasks)
+- **Backward Compatibility**: Legacy [GemAIConfig](mdc:src/core/types.ts) interface maintained
+
+### Key Files & Directories
+
+#### Core System (`src/core/`)
+- **[aiProvider.ts](mdc:src/core/aiProvider.ts)** - Universal AI provider interface and implementations
+- **[buildAIConfig.ts](mdc:src/core/buildAIConfig.ts)** - Universal config builder that routes to appropriate provider
+- **[buildGemAIConfig.ts](mdc:src/core/buildGemAIConfig.ts)** - Gemini-specific configuration builder
+- **[buildOpenAIConfig.ts](mdc:src/core/buildOpenAIConfig.ts)** - OpenAI-specific configuration builder
+- **[types.ts](mdc:src/core/types.ts)** - TypeScript interfaces and data structures
+- **[models.ts](mdc:src/core/models.ts)** - Model definitions, pricing, and provider detection
+- **[commands.ts](mdc:src/core/commands.ts)** - Command definitions and registry
+- **[configUtils.ts](mdc:src/core/configUtils.ts)** - Configuration utilities and prompt building
+- **[utils.ts](mdc:src/core/utils.ts)** - Shared utilities and helper functions
+
+#### UI Components
+- **[gemai.tsx](mdc:src/core/gemai.tsx)** - Main UI component for text-based commands
+- **[chatroom.tsx](mdc:src/core/chatroom.tsx)** - Interactive chat interface with persistent context
+- **[history.tsx](mdc:src/history.tsx)** - Command history management
+- **[stats.tsx](mdc:src/stats.tsx)** - Usage statistics and cost analysis
+
+#### Command Files (`src/`)
+Each command has its own file following the pattern `[commandName].ts`:
+- **[ask.ts](mdc:src/ask.ts)** - General AI questions
+- **[chat.ts](mdc:src/chat.ts)** - Interactive chat room
+- **[translator.ts](mdc:src/translator.ts)** - Language translation
+- **[screenshotToMarkdown.ts](mdc:src/screenshotToMarkdown.ts)** - Screenshot to Markdown conversion
+- **[screenshotToExplain.ts](mdc:src/screenshotToExplain.ts)** - Screenshot analysis
+- **[screenshotToTranslate.ts](mdc:src/screenshotToTranslate.ts)** - Screenshot text translation
+- And more...
+
+#### Configuration & Build
+- **[generate-package.ts](mdc:generate-package.ts)** - Dynamic package.json generator
+- **[package.json](mdc:package.json)** - Generated from commands definitions
+- **[tsconfig.json](mdc:tsconfig.json)** - TypeScript configuration
+
+## Command Architecture
+
+### Command Types
+1. **Text Processing**: Grammar, Professional, Friend, Shorter, Longer, Rephraser
+2. **Analysis**: Ask AI, Explainer, Summarizer, Count Tokens
+3. **Translation**: Translator with multi-language support
+4. **Interactive**: Chat Room with persistent context
+5. **Vision**: Screenshot → Markdown/Explain/Translate
+6. **Utilities**: History, Stats
+
+### Adding New Commands
+1. Define command constant in [commands.ts](mdc:src/core/commands.ts)
+2. Add command definition to `allCommands` object
+3. Create command file in `src/[commandName].ts`
+4. Add to [generate-package.ts](mdc:generate-package.ts) command list
+5. Run `npx ts-node generate-package.ts` to update package.json
+
+## Provider System Details
+
+### Model Detection & Routing
+- **Custom Models**: Detected via [detectProviderFromModelName()](mdc:src/core/models.ts)
+- **Pricing**: Custom pricing support for non-standard models
+- **Auto-switching**: o1-series models automatically switch to GPT-4o for vision tasks
+
+### Configuration Flow
+1. **buildAIConfig()** - Universal entry point
+2. **Route to provider** - Based on model's provider field
+3. **Provider-specific config** - buildGemAIConfig() or buildOpenAIConfig()
+4. **Create provider** - GeminiProvider or OpenAIProvider
+
+## Key Features
+
+### Universal Features
+- **Streaming Responses**: Real-time response streaming
+- **Token Counting**: Accurate cost calculation
+- **Custom Prompts**: Markdown-based system prompts
+- **Multi-language**: Primary/secondary language support
+- **Vision Support**: Image analysis with auto-model switching
+
+### OpenAI Models (January 2025)
+- **GPT-4.1 Series**: 1M context window, improved coding (54.6% SWE-Bench), prompt caching
+- **o4-mini**: Latest reasoning model with native vision support
+- **Reasoning Models (o1/o4)**: Embedded system prompts, fixed temperature, thinking tokens
+- **Auto-switching**: o1-series → GPT-4o for vision (o4-mini has native vision)
+
+### Gemini Models (January 2025)
+- **Gemini 2.5 Flash**: Stable release with controllable thinking capabilities
+- **Gemini 2.5 Pro**: Generally available flagship model
+- **Gemini 2.5 Flash-Lite**: Most cost-efficient model in 2.5 series
+- **Thinking Budget**: Configurable reasoning costs ($0.60 → $3.50 with thinking)
+- **Hybrid Reasoning**: Balance between speed, cost, and quality
+
+## Development Patterns
+
+### File Naming Conventions
+- Commands: `[commandName].ts` (e.g., `ask.ts`, `translator.ts`)
+- Core files: `[functionality].ts` (e.g., `aiProvider.ts`, `buildAIConfig.ts`)
+- UI components: `[componentName].tsx` (e.g., `gemai.tsx`, `chatroom.tsx`)
+
+### Import Patterns
+```typescript
+// Core imports
+import { buildAIConfig } from "./core/buildAIConfig";
+import { getCmd, CMD_[COMMAND] } from "./core/commands";
+import GemAI from "./core/gemai";
+import { RaycastProps } from "./core/types";
+
+// Raycast imports
+import { showToast, Toast, getPreferenceValues } from "@raycast/api";
+```
+
+### Command Structure Template
+```typescript
+export default function CommandName(props: RaycastProps) {
+  const fallbackPrompt = "Your system prompt here...";
+  
+  const aiConfig = buildAIConfig(getCmd(CMD_COMMAND).id, props, fallbackPrompt);
+  aiConfig.ui.placeholder = getCmd(CMD_COMMAND).ui_placeholder || "Default placeholder...";
+  
+  return GemAI(aiConfig);
+}
+```
+
+## Testing Requirements
+
+### Critical Test Scenarios
+1. **Screenshot + OpenAI**: Vision processing with GPT-4o and o4-mini
+2. **Reasoning + Vision**: Auto-switching from o1-mini to GPT-4o (o4-mini has native vision)
+3. **Token Statistics**: Accurate counting including thinking tokens
+4. **Cost Calculation**: Verify against January 2025 API pricing
+5. **All Commands**: Test with both Gemini and OpenAI models
+6. **Error Handling**: API failures and invalid configurations
+7. **GPT-4.1 Features**: 1M context window and coding capabilities
+8. **Gemini 2.5 Thinking**: Controllable thinking budgets and cost optimization
+
+### Provider-Specific Testing
+- **Gemini**: Thinking tokens, controllable budgets, safety settings, streaming
+- **OpenAI**: GPT-4.1 series, o4-mini vision, reasoning models, system messages
+- **Custom Models**: Updated pricing detection, provider routing
+
+## Security & Privacy
+- **No Hardcoded Keys**: All API keys via Raycast preferences
+- **Local Storage**: No external data transmission beyond AI APIs
+- **Rate Limiting**: Built-in handling for API quotas and errors

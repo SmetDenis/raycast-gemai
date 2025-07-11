@@ -7,390 +7,651 @@ alwaysApply: true
 
 ## Universal AI Provider Interface
 
-### Core Interface
+### Core Interfaces
 ```typescript
+// Universal AI configuration interface
 interface AIConfig {
   provider: 'gemini' | 'openai';
-  model: string;
-  apiKey: string;
-  temperature: number;
-  maxTokens?: number;
-  stream: boolean;
+  request: {
+    actionName: string;
+    origProps: object;
+    primaryLanguage: string;
+    userPrompt: string;
+    attachmentFile?: string;
+  };
+  model: {
+    // Universal fields
+    systemPrompt: string;
+    modelName: string;
+    modelNameUser: string;
+    maxOutputTokens: number;
+    temperature: number;
+    
+    // Provider-specific fields
+    geminiApiKey?: string;
+    openaiApiKey?: string;
+    openaiBaseUrl?: string;
+    
+    // Thinking/reasoning config
+    thinkingConfig?: {
+      includeThoughts?: boolean;
+      thinkingBudget?: number;
+    };
+  };
+  ui: {
+    placeholder: string;
+    allowPaste: boolean;
+    useSelected: boolean;
+  };
+  chat?: {
+    historyMessagesCount?: number;
+  };
 }
 
-interface AIResponse {
-  success: boolean;
-  content?: string;
-  error?: string;
-  usage?: TokenUsage;
-  finishReason?: string;
+// Provider interface
+interface AIProvider {
+  prepareAttachment(filePath?: string): Promise<any>;
+  sendRequest(config: AIConfig, query?: string, attachment?: any): AsyncGenerator<any, void, unknown>;
+  getTokenStats(config: AIConfig, usageMetadata: any, query: string, attachment?: any): Promise<RequestStats>;
+  countTokens(config: AIConfig, text: string, attachment?: any): Promise<number>;
 }
 ```
 
-### Provider Abstraction
-- Создавайте единый интерфейс для всех провайдеров
-- Обрабатывайте различия в API внутри провайдеров
-- Поддерживайте автоматическое переключение между моделями для любых команд
+### Provider Factory Pattern
+```typescript
+export function createAIProvider(config: AIConfig): AIProvider {
+  switch (config.provider) {
+    case "openai":
+      if (!config.model.openaiApiKey) {
+        throw new Error("OpenAI API key is required for OpenAI models");
+      }
+      return new OpenAIProvider(config.model.openaiApiKey, config.model.openaiBaseUrl);
+    
+    case "gemini":
+    default:
+      if (!config.model.geminiApiKey) {
+        throw new Error("Gemini API key is required for Gemini models");
+      }
+      return new GeminiProvider(config.model.geminiApiKey);
+  }
+}
+```
+
+## Configuration Building Pattern
+
+### Universal Configuration Builder
+Use [buildAIConfig()](mdc:src/core/buildAIConfig.ts) as the single entry point:
+
+```typescript
+export function buildAIConfig(
+  actionName: string,
+  props: RaycastProps,
+  fallbackPrompt?: string,
+): AIConfig | GemAIConfig {
+  const prefs = getConfigPreferences();
+  const currentModelName = getCurrentModel(prefs);
+  
+  // Get provider from model definition or detect for custom models
+  const modelInfo = getModelInfo(currentModelName, prefs);
+  const provider = modelInfo.provider || "gemini";
+  
+  // Route to appropriate provider configuration
+  switch (provider) {
+    case "openai":
+      return buildOpenAIConfig(actionName, props, fallbackPrompt);
+    case "gemini":
+    default:
+      return buildGemAIConfig(actionName, props, fallbackPrompt);
+  }
+}
+```
+
+### Provider-Specific Builders
+- **Gemini**: Use [buildGemAIConfig()](mdc:src/core/buildGemAIConfig.ts) for backward compatibility
+- **OpenAI**: Use [buildOpenAIConfig()](mdc:src/core/buildOpenAIConfig.ts) for OpenAI-specific features
+
+## Model Detection & Routing
+
+### Custom Model Detection
+```typescript
+export function detectProviderFromModelName(modelName: string): "openai" | "gemini" {
+  const lowerModelName = modelName.toLowerCase();
+  
+  // OpenAI model patterns (updated for new models)
+  if (
+    lowerModelName.includes("gpt") ||
+    lowerModelName.includes("o1") ||
+    lowerModelName.includes("o4") ||
+    lowerModelName.includes("chatgpt") ||
+    lowerModelName.includes("claude") ||
+    lowerModelName.includes("llama") ||
+    lowerModelName.includes("mistral") ||
+    lowerModelName.includes("azure")
+  ) {
+    return "openai";
+  }
+  
+  // Gemini model patterns (updated for 2.5 series)
+  if (
+    lowerModelName.includes("gemini") ||
+    lowerModelName.includes("bard")
+  ) {
+    return "gemini";
+  }
+  
+  // Default to gemini for backward compatibility
+  return "gemini";
+}
+```
+
+### Model Information System
+```typescript
+export function getModelInfo(modelName: string, prefs?: any): ModelInfo {
+  const existingModel = allModels[modelName];
+  
+  if (existingModel) {
+    return existingModel;
+  }
+  
+  // For custom models, create ModelInfo with custom pricing
+  const customPricing = prefs ? getCustomModelPricing(prefs) : {};
+  
+  return {
+    id: modelName,
+    name: modelName,
+    price_input: customPricing.inputPrice ?? 1.0,
+    price_output: customPricing.outputPrice ?? 3.0,
+    provider: detectProviderFromModelName(modelName),
+    supportsVision: true,
+  };
+}
+```
 
 ## Gemini Integration
 
-### Supported Models
+### Latest Model Updates (January 2025)
+- **Gemini 2.5 Flash**: Now stable with controllable thinking capabilities
+- **Gemini 2.5 Pro**: Generally available with improved performance
+- **Gemini 2.5 Flash-Lite**: Most cost-efficient model in the 2.5 series
+- **Controllable Thinking**: Adjustable reasoning budgets for optimal cost/performance balance
+
+### Supported Models & Pricing
 ```typescript
 const GEMINI_MODELS = {
-  'gemini-2.0-flash-lite': { cost: { input: 0.075, output: 0.30 } },
-  'gemini-2.0-flash': { cost: { input: 0.10, output: 0.40 } },
-  'gemini-2.5-flash-preview-04-17': { cost: { input: 0.15, output: 0.60 } },
-  'gemini-2.5-flash-preview-04-17__thinking': { 
-    cost: { input: 0.15, output: 0.60, thinking: 3.50 } 
+  'gemini-2.0-flash-lite': { 
+    cost: { input: 0.075, output: 0.30 },
+    supportsVision: true 
   },
-  'gemini-2.5-pro-preview-05-06': { cost: { input: 1.25, output: 10.00 } }
+  'gemini-2.0-flash': { 
+    cost: { input: 0.10, output: 0.40 },
+    supportsVision: true 
+  },
+  'gemini-2.5-flash': { 
+    cost: { input: 0.15, output: 0.60 },
+    supportsVision: true,
+    contextWindow: 1048576,
+    status: 'stable' 
+  },
+  'gemini-2.5-flash-lite': { 
+    cost: { input: 0.10, output: 0.40 },
+    supportsVision: true,
+    contextWindow: 1048576,
+    status: 'preview' 
+  },
+  'gemini-2.5-flash-preview-04-17': { 
+    cost: { input: 0.15, output: 0.60 },
+    supportsVision: true,
+    status: 'legacy' 
+  },
+  'gemini-2.5-flash-preview-04-17__thinking': { 
+    cost: { input: 0.15, output: 0.60, thinking: 3.50 },
+    supportsVision: true,
+    hasThinking: true,
+    status: 'legacy'
+  },
+  'gemini-2.5-pro': { 
+    cost: { input: 1.25, output: 10.00 },
+    supportsVision: true,
+    contextWindow: 1048576,
+    status: 'stable' 
+  },
+  'gemini-2.5-pro-preview-05-06': { 
+    cost: { input: 1.25, output: 10.00 },
+    supportsVision: true,
+    status: 'legacy' 
+  }
 } as const;
 ```
 
 ### Thinking Tokens Handling
 ```typescript
-// Для моделей с thinking
-if (model.includes('__thinking')) {
-  // Обработка thinking tokens отдельно
-  const thinkingTokens = response.usageMetadata.candidatesTokenCount;
+// For models with thinking capabilities
+const hasThinking = model.includes('__thinking') || 
+                   model.includes('2.5-flash') || 
+                   model.includes('2.5-pro');
+
+if (hasThinking) {
+  // Gemini 2.5 models support controllable thinking
+  const thinkingTokens = response.usageMetadata.candidatesTokenCount || 0;
   const outputTokens = response.usageMetadata.totalTokenCount - thinkingTokens;
+  
+  // Calculate costs separately
+  const thinkingCost = (thinkingTokens / 1000000) * (modelInfo.price_output_thinking || 3.50);
+  const outputCost = (outputTokens / 1000000) * modelInfo.price_output;
+  
+  // For Gemini 2.5 Flash, thinking can be controlled via thinkingConfig
+  if (config.model.thinkingConfig) {
+    // Thinking budget controls the amount of reasoning
+    requestParams.config.thinkingConfig = {
+      includeThoughts: config.model.thinkingConfig.includeThoughts || false,
+      thinkingBudget: config.model.thinkingConfig.thinkingBudget || 0
+    };
+  }
 }
 ```
 
 ### Streaming Implementation
 ```typescript
-const stream = model.generateContentStream({
-  contents: messages,
-  generationConfig: {
-    temperature,
-    maxOutputTokens: maxTokens
+async *sendRequest(config: AIConfig, query?: string, filePart?: Part): AsyncGenerator<any, void, unknown> {
+  const contents = [query || ""];
+  if (filePart) {
+    contents.push(filePart);
   }
-});
 
-for await (const chunk of stream.stream) {
-  const content = chunk.text();
-  if (content) {
-    onToken(content);
+  const requestParams = {
+    model: config.model.modelName.replace("__thinking", ""),
+    contents: contents,
+    config: {
+      maxOutputTokens: config.model.maxOutputTokens,
+      temperature: config.model.temperature,
+      thinkingConfig: config.model.thinkingConfig,
+      systemInstruction: config.model.systemPrompt,
+      safetySettings: config.model.safetySettings,
+    },
+  };
+
+  const response = await this.ai.models.generateContentStream(requestParams);
+  
+  for await (const chunk of response) {
+    yield chunk;
   }
 }
 ```
 
+### Safety Settings
+```typescript
+import { HarmBlockThreshold, HarmCategory } from "@google/genai";
+
+const safetySettings = [
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+];
+```
+
 ## OpenAI Integration
 
-### Model Handling
+### Latest Model Updates (January 2025)
+- **GPT-4.1 Series**: New flagship models with 1M token context window and improved coding capabilities
+- **o4-mini**: Latest reasoning model with vision support and enhanced performance
+- **Prompt Caching**: 75% cost reduction for repeated inputs in GPT-4.1 series
+
+### Supported Models & Pricing
 ```typescript
 const OPENAI_MODELS = {
-  'gpt-4o': { cost: { input: 2.50, output: 10.00 }, vision: true },
-  'gpt-4o-mini': { cost: { input: 0.15, output: 0.60 }, vision: true },
-  'o1-preview': { cost: { input: 15.00, output: 60.00 }, reasoning: true },
-  'o1-mini': { cost: { input: 3.00, output: 12.00 }, reasoning: true }
+  'gpt-4o': { 
+    cost: { input: 2.50, output: 10.00 },
+    supportsVision: true 
+  },
+  'gpt-4o-mini': { 
+    cost: { input: 0.15, output: 0.60 },
+    supportsVision: true 
+  },
+  'gpt-4.1': { 
+    cost: { input: 2.00, output: 8.00 },
+    supportsVision: true,
+    contextWindow: 1000000 
+  },
+  'gpt-4.1-mini': { 
+    cost: { input: 0.40, output: 1.60 },
+    supportsVision: true,
+    contextWindow: 1000000 
+  },
+  'gpt-4.1-nano': { 
+    cost: { input: 0.10, output: 0.40 },
+    supportsVision: true,
+    contextWindow: 1000000 
+  },
+  'o1-preview': { 
+    cost: { input: 15.00, output: 60.00 },
+    supportsVision: false,
+    isReasoning: true 
+  },
+  'o1-mini': { 
+    cost: { input: 3.00, output: 12.00 },
+    supportsVision: false,
+    isReasoning: true 
+  },
+  'o4-mini': { 
+    cost: { input: 1.10, output: 4.40 },
+    supportsVision: true,
+    isReasoning: true 
+  }
 } as const;
 ```
 
-### Reasoning Models (o1-series)
+### Reasoning Models (o1-series and o4-series)
 ```typescript
-// o1 модели не поддерживают system messages и streaming
-if (isReasoningModel(model)) {
-  const response = await openai.chat.completions.create({
-    model,
-    messages: userMessages, // Только user messages
-    stream: false, // Нет streaming для o1
-    temperature: 1 // Фиксированная температура
-  });
+const reasoningModels = ["o1-preview", "o1-mini", "o4-mini"];
+
+// Special handling for reasoning models
+const isReasoningModel = reasoningModels.includes(currentModelName) || 
+                        currentModelName.startsWith("o1") || 
+                        currentModelName.startsWith("o4");
+
+if (isReasoningModel) {
+  // Reasoning models have specific limitations:
+  // - No system messages (embed in user message)
+  // - Fixed temperature = 1
+  // - Use max_completion_tokens instead of max_tokens
+  // - No streaming parameters (top_p, frequency_penalty, etc.)
+  
+  requestParams.max_completion_tokens = config.model.maxOutputTokens;
+  requestParams.temperature = 1;
+  
+  // Embed system prompt in user message
+  userContent = `${config.model.systemPrompt}\n\n---\n\n${userContent}`;
+} else {
+  // Regular models (including GPT-4.1 series)
+  requestParams.max_tokens = config.model.maxOutputTokens;
+  requestParams.temperature = config.model.temperature;
+  requestParams.top_p = config.model.topP;
+  requestParams.frequency_penalty = config.model.frequencyPenalty;
+  requestParams.presence_penalty = config.model.presencePenalty;
+}
+```
+
+### GPT-4.1 Series Features
+```typescript
+// GPT-4.1 series models offer significant improvements
+const gpt41Models = ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano"];
+
+const isGPT41Model = gpt41Models.includes(currentModelName) || currentModelName.startsWith("gpt-4.1");
+
+if (isGPT41Model) {
+  // GPT-4.1 features:
+  // - 1M token context window
+  // - Improved coding capabilities (54.6% on SWE-Bench Verified)
+  // - Better instruction following
+  // - Prompt caching support (75% cost reduction for repeated inputs)
+  // - Support for all standard parameters
+  
+  requestParams.max_tokens = config.model.maxOutputTokens;
+  requestParams.temperature = config.model.temperature;
+  requestParams.top_p = config.model.topP;
+  requestParams.frequency_penalty = config.model.frequencyPenalty;
+  requestParams.presence_penalty = config.model.presencePenalty;
 }
 ```
 
 ### Auto-switching for Vision
 ```typescript
-// Автоматическое переключение o1 → GPT-4o для изображений
-if (hasImages && isReasoningModel(model)) {
-  console.log(`Switching from ${model} to gpt-4o for image processing`);
-  model = 'gpt-4o';
+// Auto-switch reasoning models to vision-capable models when image is provided
+// Note: o4-mini supports vision, so no auto-switching needed
+if (isReasoningModel && !currentModelName.includes("o4") && attachment) {
+  config = switchToVisionModel(config);
+  
+  await showToast({
+    style: Toast.Style.Success,
+    title: "Model auto-switched",
+    message: `Switched to GPT-4o for image processing (was ${originalConfig.model.modelNameUser})`,
+  });
+}
+
+function switchToVisionModel(config: AIConfig): AIConfig {
+  return {
+    ...config,
+    model: {
+      ...config.model,
+      modelName: "gpt-4o",
+      modelNameUser: "GPT-4o (Auto-switched for vision)",
+      maxOutputTokens: 4096,
+      temperature: 0.7,
+      thinkingConfig: {
+        ...config.model.thinkingConfig,
+        thinkingBudget: 0,
+      },
+    },
+  };
+}
+```
+
+### Streaming Implementation
+```typescript
+async *sendRequest(config: AIConfig, query?: string, attachment?: any): AsyncGenerator<any, void, unknown> {
+  const messages: any[] = [];
+  
+  // System message for non-reasoning models
+  if (!isFinalReasoningModel) {
+    messages.push({
+      role: "system",
+      content: config.model.systemPrompt,
+    });
+  }
+  
+  // User message with optional attachment
+  const userMessage: any = {
+    role: "user",
+    content: attachment ? 
+      [{ type: "text", text: userContent }, attachment] : 
+      userContent,
+  };
+  
+  messages.push(userMessage);
+  
+  const requestParams: any = {
+    model: config.model.modelName,
+    messages: messages,
+    stream: true,
+    stream_options: {
+      include_usage: true, // Required for usage stats
+    },
+  };
+  
+  const response = await this.client.chat.completions.create(requestParams);
+  
+  for await (const chunk of response) {
+    yield {
+      text: chunk.choices[0]?.delta?.content || "",
+      usageMetadata: chunk.usage,
+      finishReason: chunk.choices[0]?.finish_reason,
+    };
+  }
 }
 ```
 
 ## Token Counting & Cost Calculation
 
-### Accurate Token Counting
+### Token Statistics Interface
 ```typescript
-interface TokenUsage {
-  inputTokens: number;
-  outputTokens: number;
-  thinkingTokens?: number; // Для Gemini Thinking
-  reasoningTokens?: number; // Для OpenAI o1
-  totalTokens: number;
-  cost: number;
+interface RequestStats {
+  prompt: number;      // Input tokens
+  input: number;       // Input tokens (alias)
+  thoughts: number;    // Thinking tokens (reasoning models)
+  total: number;       // Total tokens
+  totalTime: number;   // Total response time
+  firstRespTime: number; // Time to first token
 }
 ```
 
-### Fallback Estimation
+### Cost Calculation Pattern
 ```typescript
-// Если точный подсчет недоступен
-function estimateTokens(text: string): number {
-  // Приблизительная оценка: 1 токен ≈ 4 символа
-  return Math.ceil(text.length / 4);
+export function calculateItemCost(stats: RequestStats, modelName: string, prefs?: any): number {
+  const modelInfo = getModelInfo(modelName, prefs);
+  
+  // Input cost
+  const inputCost = (stats.input / 1000000) * modelInfo.price_input;
+  
+  // Output cost (excluding thinking tokens)
+  const outputTokens = stats.total - stats.input - stats.thoughts;
+  const outputCost = (outputTokens / 1000000) * modelInfo.price_output;
+  
+  // Thinking cost (for reasoning models)
+  const thinkingCost = stats.thoughts > 0 ? 
+    (stats.thoughts / 1000000) * (modelInfo.price_output_thinking || modelInfo.price_output) : 0;
+  
+  return inputCost + outputCost + thinkingCost;
 }
 ```
 
-## Error Handling
+## Custom Model Support
 
-### Provider-Specific Errors
+### Custom Pricing Configuration
+```typescript
+interface CustomModelPricing {
+  inputPrice?: number;   // Price per 1M input tokens
+  outputPrice?: number;  // Price per 1M output tokens
+}
+
+function getCustomModelPricing(prefs: any): CustomModelPricing {
+  return {
+    inputPrice: prefs.customModelInputPrice ? parseFloat(prefs.customModelInputPrice) : undefined,
+    outputPrice: prefs.customModelOutputPrice ? parseFloat(prefs.customModelOutputPrice) : undefined,
+  };
+}
+```
+
+### Fallback Pricing
+```typescript
+// Conservative defaults for unknown models
+const DEFAULT_INPUT_PRICE = 1.0;   // $1.00 per 1M tokens
+const DEFAULT_OUTPUT_PRICE = 3.0;  // $3.00 per 1M tokens
+```
+
+## Error Handling & Resilience
+
+### API Error Handling
 ```typescript
 try {
-  const response = await provider.call(request);
-} catch (error) {
-  if (error.code === 'QUOTA_EXCEEDED') {
-    throw new Error('API quota exceeded. Please check your usage.');
-  } else if (error.code === 'INVALID_API_KEY') {
-    throw new Error('Invalid API key. Please check your configuration.');
-  }
-  throw error;
-}
-```
-
-### Graceful Fallbacks
-```typescript
-// Fallback между провайдерами
-try {
-  return await primaryProvider.call(request);
-} catch (error) {
-  console.warn('Primary provider failed, trying fallback');
-  return await fallbackProvider.call(request);
-}
-```
-
-## Backward Compatibility
-
-### Обратная совместимость
-- **Интерфейс GemAIConfig должен оставаться функциональным** для существующего кода
-- **Устаревшие команды должны работать без изменений** - не ломайте существующий API
-- **Типобезопасность**: Убедитесь что AIConfig можно привести к GemAIConfig когда уместно
-
-### Interface Compatibility
-```typescript
-// ✅ Правильно: GemAIConfig расширяет или совместим с AIConfig
-interface GemAIConfig extends Omit<AIConfig, 'provider'> {
-  provider: 'gemini';
-  // Дополнительные Gemini-специфичные поля
-  safetySettings?: SafetySettings;
-  generationConfig?: GenerationConfig;
-}
-
-// ✅ Type guards для безопасного приведения типов
-function isGemAIConfig(config: AIConfig): config is GemAIConfig {
-  return config.provider === 'gemini';
-}
-
-// ✅ Функции должны принимать оба типа
-function processConfig(config: AIConfig | GemAIConfig): ProcessedConfig {
-  if (isGemAIConfig(config)) {
-    // Специфичная логика для GemAI
-    return processGemAIConfig(config);
-  }
-  // Общая логика для AIConfig
-  return processGenericConfig(config);
-}
-```
-
-### Migration Strategy
-```typescript
-// ✅ Поддержка устаревших интерфейсов с предупреждениями
-/** @deprecated Use AIConfig instead. Will be removed in v2.0.0 */
-interface LegacyGemAIConfig {
-  apiKey: string;
-  model: string;
-  // ... устаревшие поля
-}
-
-// ✅ Adapter pattern для совместимости
-function adaptLegacyConfig(legacy: LegacyGemAIConfig): AIConfig {
-  console.warn('LegacyGemAIConfig is deprecated. Please migrate to AIConfig.');
-  return {
-    provider: 'gemini',
-    apiKey: legacy.apiKey,
-    model: legacy.model,
-    temperature: 0.7, // Значение по умолчанию
-    stream: true
-  };
-}
-```
-
-### Breaking Changes Prevention
-- **Никогда не удаляйте публичные методы** без deprecation периода
-- **Добавляйте новые поля как опциональные** в существующие интерфейсы
-- **Используйте union types** для поддержки множественных форматов
-- **Документируйте migration path** для каждого breaking change
-
-```typescript
-// ✅ Правильно: расширение без breaking changes
-interface AIConfigV2 extends AIConfig {
-  // Новые поля как опциональные
-  maxRetries?: number;
-  timeout?: number;
-  customHeaders?: Record<string, string>;
-}
-
-// ❌ Неправильно: изменение существующих полей
-interface AIConfigBroken {
-  provider: 'gemini' | 'openai' | 'claude'; // Добавление нового значения - OK
-  // model: ModelName; // Изменение типа - BREAKING CHANGE!
-}
-```
-
-## Critical Testing Scenarios
-
-### Критичные тестовые сценарии
-1. **Скриншот + OpenAI**: Проверь что screenshotToMarkdown работает с GPT-4o
-2. **Reasoning + Vision**: Тестируй автопереключение с o1-mini на GPT-4o с изображениями
-3. **Статистика токенов**: Проверяй точный подсчет токенов для обоих провайдеров
-4. **Цены моделей**: Убедись что расчет стоимости соответствует официальным ценам API
-
-### Production Quality Requirements
-**Помни**: Это продакшен расширение Raycast используемое реальными пользователями. Приоритет:
-- **Стабильность** - все функции должны работать надежно
-- **Четкая обратная связь с пользователем** - понятные ошибки и статусы
-- **Плавная работа всех поддерживаемых AI моделей** - без багов и зависаний
-
-### Test Cases Implementation
-```typescript
-// ✅ Тест скриншота с OpenAI
-async function testScreenshotWithOpenAI() {
-  const config: AIConfig = {
-    provider: 'openai',
-    model: 'gpt-4o',
-    apiKey: process.env.OPENAI_API_KEY,
-    temperature: 0.7,
-    stream: true
-  };
+  const response = await provider.sendRequest(config, query, attachment);
+  // Process response...
+} catch (error: any) {
+  await showToast({
+    style: Toast.Style.Failure,
+    title: "AI Request Failed",
+    message: error?.message || "Unknown error occurred",
+  });
   
-  const result = await screenshotToMarkdown(mockScreenshot, config);
-  expect(result.success).toBe(true);
-  expect(result.content).toContain('# '); // Должен содержать markdown
-}
-
-// ✅ Тест автопереключения с o1 на GPT-4o для изображений
-async function testReasoningVisionFallback() {
-  const config: AIConfig = {
-    provider: 'openai',
-    model: 'o1-mini',
-    apiKey: process.env.OPENAI_API_KEY,
-    temperature: 1,
-    stream: false
-  };
-  
-  const result = await processWithImage(mockImage, config);
-  // Должно автоматически переключиться на gpt-4o
-  expect(result.modelUsed).toBe('gpt-4o');
-  expect(result.success).toBe(true);
-}
-
-// ✅ Тест точности подсчета токенов
-async function testTokenCounting() {
-  const testCases = [
-    { provider: 'gemini', model: 'gemini-2.0-flash' },
-    { provider: 'openai', model: 'gpt-4o' },
-    { provider: 'openai', model: 'o1-preview' }
-  ];
-  
-  for (const testCase of testCases) {
-    const result = await makeRequest(testInput, testCase);
-    expect(result.usage.inputTokens).toBeGreaterThan(0);
-    expect(result.usage.outputTokens).toBeGreaterThan(0);
-    expect(result.usage.totalTokens).toBe(
-      result.usage.inputTokens + result.usage.outputTokens
-    );
-    expect(result.usage.cost).toBeGreaterThan(0);
-  }
-}
-
-// ✅ Тест соответствия официальным ценам
-async function testPriceAccuracy() {
-  const officialPrices = {
-    'gpt-4o': { input: 2.50, output: 10.00 },
-    'gemini-2.0-flash': { input: 0.10, output: 0.40 }
-  };
-  
-  for (const [model, prices] of Object.entries(officialPrices)) {
-    const modelConfig = getModelConfig(model);
-    expect(modelConfig.cost.input).toBe(prices.input);
-    expect(modelConfig.cost.output).toBe(prices.output);
-  }
-}
-```
-
-### Manual Testing Checklist
-- [ ] Создание скриншота через screenshotToMarkdown с GPT-4o
-- [ ] Отправка изображения с o1-mini (должно переключиться на GPT-4o)
-- [ ] Проверка статистики токенов в stats.tsx
-- [ ] Сравнение расчетной стоимости с официальными ценами
-- [ ] Тестирование всех команд с обоими провайдерами
-- [ ] Проверка обработки ошибок API
-- [ ] Тестирование потоковой передачи ответов
-
-## Best Practices
-
-### Configuration Management
-- Валидируйте API ключи при старте
-- Поддерживайте multiple API keys для rate limiting
-- Используйте environment variables для sensitive data
-
-### Performance Optimization
-- Кэшируйте токенизацию для повторных запросов
-- Используйте connection pooling для HTTP requests
-- Оптимизируйте размер контекста для cost efficiency
-
-### Измерение времени
-- **Время первого ответа**: измеряй от начала запроса до первого чанка контента
-- **НИКОГДА не измеряй время до начала стриминга** - это просто инициализация
-- **Общее время**: полная продолжительность стриминга включая финальную обработку
-
-```typescript
-// ✅ Правильное измерение времени
-interface TimingMetrics {
-  requestStart: number;
-  firstChunkTime?: number;
-  streamEnd: number;
-  totalDuration: number;
-  timeToFirstToken: number;
-}
-
-async function measureStreamingResponse(provider: AIProvider, input: string): Promise<TimingMetrics> {
-  const requestStart = Date.now();
-  let firstChunkTime: number | undefined;
-  
-  const stream = await provider.generateStream(input);
-  
-  for await (const chunk of stream) {
-    if (chunk.content && !firstChunkTime) {
-      // ✅ Измеряем время до первого контента, НЕ до начала стрима
-      firstChunkTime = Date.now();
-    }
-    
-    // Обработка чанка...
-  }
-  
-  const streamEnd = Date.now();
-  
-  return {
-    requestStart,
-    firstChunkTime,
-    streamEnd,
-    totalDuration: streamEnd - requestStart,
-    timeToFirstToken: firstChunkTime ? firstChunkTime - requestStart : 0
-  };
-}
-
-// ❌ Неправильно: измерение времени инициализации
-async function incorrectTiming(provider: AIProvider, input: string) {
-  const start = Date.now();
-  const stream = await provider.generateStream(input);
-  const initTime = Date.now() - start; // ❌ Это НЕ время ответа!
-  
-  // Это просто время инициализации стрима
+  // Log for debugging
+  console.error("AI Provider Error:", error);
 }
 ```
 
 ### Rate Limiting
-- Реализуйте exponential backoff для retry
-- Отслеживайте usage limits по провайдерам
-- Показывайте пользователю информацию о лимитах
+```typescript
+// Handle rate limiting gracefully
+if (error.status === 429) {
+  await showToast({
+    style: Toast.Style.Failure,
+    title: "Rate Limit Exceeded",
+    message: "Please wait before making another request",
+  });
+}
+```
+
+## Testing Requirements
+
+### Critical Test Scenarios
+1. **Provider Detection**: Test custom model routing for new models
+2. **Vision Auto-switching**: o1-series → GPT-4o with images (o4-mini has native vision)
+3. **Token Counting**: Verify accuracy across all models including thinking tokens
+4. **Cost Calculation**: Match official API pricing for 2025 models
+5. **Streaming**: Real-time response updates for all model types
+6. **Error Handling**: API failures, invalid keys, rate limits
+7. **GPT-4.1 Features**: Test 1M context window and improved coding capabilities
+8. **Gemini 2.5 Thinking**: Test controllable thinking budgets and cost optimization
+9. **o4-mini Vision**: Test reasoning + vision capabilities
+10. **Prompt Caching**: Test cost reduction for repeated inputs
+
+### Model-Specific Testing
+```typescript
+// Test matrix for all supported models
+const TEST_MODELS = [
+  // Gemini models (stable)
+  'gemini-2.0-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-pro',
+  
+  // Gemini models (legacy)
+  'gemini-2.5-flash-preview-04-17',
+  'gemini-2.5-flash-preview-04-17__thinking',
+  'gemini-2.5-pro-preview-05-06',
+  
+  // OpenAI models (stable)
+  'gpt-4o',
+  'gpt-4o-mini',
+  'gpt-4.1',
+  'gpt-4.1-mini',
+  'gpt-4.1-nano',
+  
+  // OpenAI reasoning models
+  'o1-preview',
+  'o1-mini',
+  'o4-mini',
+  
+  // Custom models
+  'custom-model-name',
+];
+```
+
+### Integration Testing
+```typescript
+// Test provider integration
+async function testProviderIntegration(modelName: string) {
+  const config = buildAIConfig("ask", mockProps, "Test prompt");
+  const provider = createAIProvider(config);
+  
+  // Test text generation
+  const textResponse = await provider.sendRequest(config, "Hello");
+  
+  // Test vision (if supported)
+  if (getModelInfo(modelName).supportsVision) {
+    const attachment = await provider.prepareAttachment("test-image.png");
+    const visionResponse = await provider.sendRequest(config, "Describe this image", attachment);
+  }
+  
+  // Test token counting
+  const tokens = await provider.countTokens(config, "Test text");
+}
+```
+
+## Performance Optimization
+
+### Streaming Best Practices
+- Update UI every 3 chunks or significant content
+- Measure first response time separately
+- Track total streaming time
+- Handle partial responses gracefully
+
+### Memory Management
+- Clean up temporary files after use
+- Limit conversation history in chat
+- Use efficient token counting methods
+- Optimize attachment handling
+
+## Security Considerations
+
+### API Key Management
+- Never hardcode API keys
+- Use Raycast preferences for secure storage
+- Validate keys before use
+- Handle authentication errors gracefully
+
+### Data Privacy
+- No external data transmission beyond AI APIs
+- Local processing only
+- Secure attachment handling
+- Clear temporary files

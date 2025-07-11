@@ -1,4 +1,440 @@
----
+# Testing & Quality Assurance Rules
+
+## Testing Strategy Overview
+
+### Testing Pyramid
+- **Unit Tests**: Core utilities, token counting, cost calculation
+- **Integration Tests**: AI provider interactions, model switching
+- **End-to-End Tests**: Complete command workflows
+- **Manual Tests**: User experience, edge cases, real-world scenarios
+
+### Critical Quality Gates
+1. **AI Provider Accuracy**: All models return expected responses
+2. **Cost Calculation**: Exact matching with official API pricing
+3. **Token Counting**: Accurate measurement across all providers
+4. **Error Handling**: Graceful degradation and user feedback
+5. **Performance**: Response times and streaming efficiency
+
+## AI Provider Testing
+
+### Model Coverage Matrix
+Test all supported models across key scenarios:
+
+```typescript
+const TEST_MATRIX = {
+  // Gemini Models (Stable)
+  'gemini-2.5-flash': ['text', 'vision', 'thinking', 'streaming'],
+  'gemini-2.5-pro': ['text', 'vision', 'thinking', 'streaming'],
+  'gemini-2.5-flash-lite': ['text', 'vision', 'streaming'],
+  'gemini-2.0-flash': ['text', 'vision', 'streaming'],
+  'gemini-2.0-flash-lite': ['text', 'vision', 'streaming'],
+  
+  // OpenAI Models (Stable)
+  'gpt-4.1': ['text', 'vision', 'streaming', 'context-1m'],
+  'gpt-4.1-mini': ['text', 'vision', 'streaming', 'context-1m'],
+  'gpt-4.1-nano': ['text', 'vision', 'streaming', 'context-1m'],
+  'gpt-4o': ['text', 'vision', 'streaming'],
+  'gpt-4o-mini': ['text', 'vision', 'streaming'],
+  
+  // Reasoning Models
+  'o1-preview': ['text', 'reasoning', 'no-streaming'],
+  'o1-mini': ['text', 'reasoning', 'no-streaming'],
+  'o4-mini': ['text', 'vision', 'reasoning', 'streaming'],
+};
+```
+
+### Provider-Specific Tests
+
+#### Gemini Provider Tests
+```typescript
+describe('GeminiProvider', () => {
+  test('should handle thinking tokens correctly', async () => {
+    const config = buildGemAIConfig('ask', mockProps);
+    config.model.thinkingConfig = { thinkingBudget: 1000 };
+    
+    const provider = new GeminiProvider(apiKey);
+    const response = await provider.sendRequest(config, 'Complex reasoning task');
+    
+    expect(response.usageMetadata.candidatesTokenCount).toBeGreaterThan(0);
+    expect(response.usageMetadata.totalTokenCount).toBeGreaterThan(0);
+  });
+  
+  test('should apply safety settings', async () => {
+    const config = buildGemAIConfig('ask', mockProps);
+    const provider = new GeminiProvider(apiKey);
+    
+    // Verify safety settings are applied
+    expect(config.model.safetySettings).toHaveLength(4);
+    expect(config.model.safetySettings[0].threshold).toBe(HarmBlockThreshold.BLOCK_NONE);
+  });
+});
+```
+
+#### OpenAI Provider Tests
+```typescript
+describe('OpenAIProvider', () => {
+  test('should auto-switch o1 models for vision', async () => {
+    const config = buildOpenAIConfig('ask', mockProps);
+    config.model.modelName = 'o1-mini';
+    
+    const provider = new OpenAIProvider(apiKey);
+    const mockImage = await provider.prepareAttachment('test-image.png');
+    
+    // Should auto-switch to GPT-4o for vision
+    const response = await provider.sendRequest(config, 'Describe image', mockImage);
+    expect(response.modelUsed).toBe('gpt-4o');
+  });
+  
+  test('should handle o4-mini vision natively', async () => {
+    const config = buildOpenAIConfig('ask', mockProps);
+    config.model.modelName = 'o4-mini';
+    
+    const provider = new OpenAIProvider(apiKey);
+    const mockImage = await provider.prepareAttachment('test-image.png');
+    
+    // Should NOT auto-switch
+    const response = await provider.sendRequest(config, 'Describe image', mockImage);
+    expect(response.modelUsed).toBe('o4-mini');
+  });
+  
+  test('should handle GPT-4.1 context window', async () => {
+    const config = buildOpenAIConfig('ask', mockProps);
+    config.model.modelName = 'gpt-4.1';
+    config.model.maxOutputTokens = 32768;
+    
+    const longInput = 'a'.repeat(500000); // ~500K tokens
+    const provider = new OpenAIProvider(apiKey);
+    
+    const response = await provider.sendRequest(config, longInput);
+    expect(response.success).toBe(true);
+  });
+});
+```
+
+## Cost Calculation Testing
+
+### Pricing Accuracy Tests
+```typescript
+describe('Cost Calculation', () => {
+  const OFFICIAL_PRICES_2025 = {
+    'gpt-4.1': { input: 2.00, output: 8.00 },
+    'gpt-4.1-mini': { input: 0.40, output: 1.60 },
+    'gpt-4.1-nano': { input: 0.10, output: 0.40 },
+    'o4-mini': { input: 1.10, output: 4.40 },
+    'gemini-2.5-flash': { input: 0.15, output: 0.60, thinking: 3.50 },
+    'gemini-2.5-pro': { input: 1.25, output: 10.00 },
+    'gemini-2.5-flash-lite': { input: 0.10, output: 0.40 },
+  };
+  
+  Object.entries(OFFICIAL_PRICES_2025).forEach(([model, prices]) => {
+    test(`should calculate correct cost for ${model}`, () => {
+      const stats: RequestStats = {
+        input: 1000000, // 1M tokens
+        output: 1000000, // 1M tokens
+        thoughts: model.includes('gemini-2.5') ? 500000 : 0, // 500K thinking tokens
+        total: model.includes('gemini-2.5') ? 2500000 : 2000000,
+        totalTime: 10,
+        firstRespTime: 2
+      };
+      
+      const cost = calculatePricePerMillionTokens(model, stats);
+      const expectedCost = prices.input + prices.output + (prices.thinking || 0) * 0.5;
+      
+      expect(cost).toBeCloseTo(expectedCost, 4);
+    });
+  });
+});
+```
+
+### Token Counting Accuracy
+```typescript
+describe('Token Counting', () => {
+  test('should count tokens accurately across providers', async () => {
+    const testText = 'This is a test message for token counting accuracy.';
+    
+    const geminiConfig = buildGemAIConfig('ask', mockProps);
+    const openaiConfig = buildOpenAIConfig('ask', mockProps);
+    
+    const geminiProvider = new GeminiProvider(geminiApiKey);
+    const openaiProvider = new OpenAIProvider(openaiApiKey);
+    
+    const geminiCount = await geminiProvider.countTokens(geminiConfig, testText);
+    const openaiCount = await openaiProvider.countTokens(openaiConfig, testText);
+    
+    // Counts should be within reasonable range (different tokenizers)
+    expect(Math.abs(geminiCount - openaiCount)).toBeLessThan(5);
+    expect(geminiCount).toBeGreaterThan(0);
+    expect(openaiCount).toBeGreaterThan(0);
+  });
+});
+```
+
+## Performance Testing
+
+### Response Time Benchmarks
+```typescript
+describe('Performance Benchmarks', () => {
+  const PERFORMANCE_TARGETS = {
+    'gemini-2.5-flash-lite': { firstToken: 1000, totalTime: 10000 }, // ms
+    'gemini-2.5-flash': { firstToken: 1500, totalTime: 15000 },
+    'gpt-4.1-nano': { firstToken: 800, totalTime: 8000 },
+    'gpt-4.1-mini': { firstToken: 1200, totalTime: 12000 },
+    'o4-mini': { firstToken: 3000, totalTime: 30000 }, // Reasoning takes longer
+  };
+  
+  Object.entries(PERFORMANCE_TARGETS).forEach(([model, targets]) => {
+    test(`${model} should meet performance targets`, async () => {
+      const config = buildAIConfig('ask', mockProps);
+      config.model.modelName = model;
+      
+      const provider = createAIProvider(config);
+      const startTime = Date.now();
+      let firstTokenTime: number | null = null;
+      
+      const response = provider.sendRequest(config, 'Write a short poem about testing.');
+      
+      for await (const chunk of response) {
+        if (chunk.text && firstTokenTime === null) {
+          firstTokenTime = Date.now() - startTime;
+        }
+      }
+      
+      const totalTime = Date.now() - startTime;
+      
+      expect(firstTokenTime).toBeLessThan(targets.firstToken);
+      expect(totalTime).toBeLessThan(targets.totalTime);
+    });
+  });
+});
+```
+
+### Streaming Efficiency
+```typescript
+describe('Streaming Performance', () => {
+  test('should stream responses efficiently', async () => {
+    const config = buildAIConfig('ask', mockProps);
+    const provider = createAIProvider(config);
+    
+    let chunkCount = 0;
+    let totalContent = '';
+    const chunkTimes: number[] = [];
+    let lastChunkTime = Date.now();
+    
+    const response = provider.sendRequest(config, 'Generate a 500-word essay about AI.');
+    
+    for await (const chunk of response) {
+      if (chunk.text) {
+        chunkCount++;
+        totalContent += chunk.text;
+        
+        const now = Date.now();
+        chunkTimes.push(now - lastChunkTime);
+        lastChunkTime = now;
+      }
+    }
+    
+    // Verify streaming efficiency
+    expect(chunkCount).toBeGreaterThan(5); // Multiple chunks
+    expect(totalContent.length).toBeGreaterThan(100); // Substantial content
+    
+    // Average time between chunks should be reasonable
+    const avgChunkTime = chunkTimes.reduce((a, b) => a + b, 0) / chunkTimes.length;
+    expect(avgChunkTime).toBeLessThan(500); // 500ms between chunks max
+  });
+});
+```
+
+## Error Handling Testing
+
+### API Error Scenarios
+```typescript
+describe('Error Handling', () => {
+  test('should handle invalid API keys gracefully', async () => {
+    const config = buildAIConfig('ask', mockProps);
+    config.model.openaiApiKey = 'invalid-key';
+    
+    const provider = new OpenAIProvider('invalid-key');
+    
+    await expect(
+      provider.sendRequest(config, 'Test message')
+    ).rejects.toThrow('Invalid API key');
+  });
+  
+  test('should handle rate limiting', async () => {
+    // Mock rate limit response
+    const mockProvider = createMockProvider();
+    mockProvider.mockRateLimit();
+    
+    const config = buildAIConfig('ask', mockProps);
+    
+    await expect(
+      mockProvider.sendRequest(config, 'Test message')
+    ).rejects.toThrow('Rate limit exceeded');
+  });
+  
+  test('should handle network timeouts', async () => {
+    const config = buildAIConfig('ask', mockProps);
+    const provider = createAIProvider(config);
+    
+    // Simulate network timeout
+    jest.setTimeout(5000);
+    
+    await expect(
+      provider.sendRequest(config, 'Test with timeout')
+    ).rejects.toThrow(/timeout/i);
+  });
+});
+```
+
+### Fallback Mechanisms
+```typescript
+describe('Fallback Mechanisms', () => {
+  test('should fall back to estimation when token counting fails', async () => {
+    const config = buildAIConfig('ask', mockProps);
+    const provider = createAIProvider(config);
+    
+    // Mock token counting failure
+    jest.spyOn(provider, 'countTokens').mockRejectedValue(new Error('API Error'));
+    
+    const stats = await provider.getTokenStats(config, mockUsage, 'test text');
+    
+    // Should use estimation fallback
+    expect(stats.input).toBeGreaterThan(0);
+    expect(stats.total).toBeGreaterThan(0);
+  });
+});
+```
+
+## Integration Testing
+
+### End-to-End Command Tests
+```typescript
+describe('Command Integration', () => {
+  test('should complete full ask command workflow', async () => {
+    const props: RaycastProps = {
+      arguments: { query: 'What is 2+2?' },
+      fallbackText: '',
+      launchType: 'userInitiated'
+    };
+    
+    const config = buildAIConfig('ask', props, 'You are a helpful assistant.');
+    const provider = createAIProvider(config);
+    
+    const response = provider.sendRequest(config, props.arguments.query);
+    let fullResponse = '';
+    
+    for await (const chunk of response) {
+      if (chunk.text) {
+        fullResponse += chunk.text;
+      }
+    }
+    
+    expect(fullResponse).toContain('4');
+    expect(fullResponse.length).toBeGreaterThan(1);
+  });
+  
+  test('should handle screenshot commands', async () => {
+    const props: RaycastProps = {
+      arguments: {},
+      fallbackText: '',
+      launchType: 'userInitiated'
+    };
+    
+    const config = buildAIConfig('screenshotToMarkdown', props);
+    const provider = createAIProvider(config);
+    
+    const attachment = await provider.prepareAttachment('test-screenshot.png');
+    const response = provider.sendRequest(config, 'Convert to markdown', attachment);
+    
+    let fullResponse = '';
+    for await (const chunk of response) {
+      if (chunk.text) {
+        fullResponse += chunk.text;
+      }
+    }
+    
+    expect(fullResponse).toMatch(/#{1,6}/); // Should contain markdown headers
+  });
+});
+```
+
+## Manual Testing Checklist
+
+### Pre-Release Testing
+- [ ] Test all commands with both Gemini and OpenAI models
+- [ ] Verify cost calculations match official pricing
+- [ ] Test vision capabilities with real screenshots
+- [ ] Verify thinking models work correctly
+- [ ] Test auto-switching scenarios
+- [ ] Verify error messages are user-friendly
+- [ ] Test with various input sizes (small, medium, large)
+- [ ] Verify streaming works smoothly
+- [ ] Test custom model detection
+- [ ] Verify all UI components render correctly
+
+### Model-Specific Testing
+- [ ] **GPT-4.1**: Test 1M context window with large inputs
+- [ ] **o4-mini**: Test reasoning + vision capabilities
+- [ ] **Gemini 2.5 Flash**: Test controllable thinking budgets
+- [ ] **Gemini 2.5 Pro**: Test complex reasoning tasks
+- [ ] **Legacy models**: Ensure backward compatibility
+
+### Performance Testing
+- [ ] Measure first token response times
+- [ ] Test streaming efficiency
+- [ ] Verify memory usage is reasonable
+- [ ] Test with multiple concurrent requests
+- [ ] Verify no memory leaks in long sessions
+
+## Quality Gates
+
+### Automated Checks
+1. **All tests pass**: 100% test suite success rate
+2. **Coverage**: Minimum 80% code coverage for core functions
+3. **Performance**: Response times within defined targets
+4. **Cost accuracy**: ±0.01% variance from official pricing
+5. **Error handling**: All error scenarios covered
+
+### Manual Verification
+1. **User Experience**: Smooth operation across all commands
+2. **Documentation**: All new features documented
+3. **Backward Compatibility**: Existing functionality unchanged
+4. **Security**: No API keys or sensitive data logged
+
+## Continuous Testing
+
+### Automated Testing Pipeline
+1. **Unit Tests**: Run on every commit
+2. **Integration Tests**: Run on pull requests
+3. **Performance Tests**: Run nightly
+4. **Cost Verification**: Run weekly against official pricing
+5. **Manual Tests**: Run before each release
+
+### Monitoring & Alerting
+- **Response Time Monitoring**: Alert if >2x normal response time
+- **Error Rate Monitoring**: Alert if error rate >5%
+- **Cost Drift Monitoring**: Alert if calculated costs drift from official pricing
+- **Model Availability**: Monitor API status for all supported models
+
+## Testing Best Practices
+
+### Test Data Management
+- Use consistent test inputs across all models
+- Maintain test image/file assets for vision testing
+- Create realistic user scenarios for integration tests
+- Use mock responses for unit tests to avoid API costs
+
+### Test Environment
+- Separate test API keys with limited quotas
+- Use test-specific model configurations
+- Implement proper cleanup after tests
+- Isolate tests to prevent interference
+
+### Documentation
+- Document all test scenarios and expected outcomes
+- Maintain up-to-date test data and fixtures
+- Document performance benchmarks and targets
+- Keep testing guidelines current with model updates
 description:
 globs:
 alwaysApply: false

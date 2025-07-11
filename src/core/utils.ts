@@ -93,7 +93,7 @@ export function toMdJson(variable: unknown): string {
 
 // Calculates cost for a single HistoryItem
 export function calculateItemCost(item: HistoryItem): number {
-  const modelName = item.model ?? "gemini-2.5-flash-preview-04-17"; // Use default if model is undefined
+  const modelName = item.model ?? "gemini-2.5-flash"; // Use default if model is undefined
   // Ensure requestStats exists before accessing its properties
   if (!item.requestStats) {
     return 0; // Cannot calculate cost without stats

@@ -3,304 +3,597 @@ description: Паттерны создания пользовательског�
 globs: 
 alwaysApply: true
 ---
-# UI Components and UX Patterns
+# UI Components & UX Guidelines
 
-## React Component Structure
+## Core UI Components
 
-### Functional Components
+### GemAI Component ([gemai.tsx](mdc:src/core/gemai.tsx))
+The main UI component for text-based AI commands with dual-page architecture:
+
 ```typescript
-// ✅ Правильная структура компонента
-interface GemAIProps {
-  initialInput?: string;
-  model: string;
-  onResponse?: (response: string) => void;
+export default function GemAI(aiConfig: AIConfig) {
+  const PageState = { Form: 0, Response: 1 };
+  
+  // State management
+  const [page, setPage] = useState(PageState.Response);
+  const [isLoading, setIsLoading] = useState(true);
+  const [markdown, setMarkdown] = useState("");
+  const [renderedText, setRenderedText] = useState("");
+  const [navigationTitle, setNavigationTitle] = useState("GemAI -> " + getCmd(aiConfig.request.actionName).name);
+  
+  // UI pattern: Form for input, Detail for response
+  return page === PageState.Form ? renderForm() : renderResponse();
 }
+```
 
-export default function GemAI({ initialInput, model, onResponse }: GemAIProps) {
-  // Hooks
-  const [state, setState] = useState<ComponentState>();
-  const preferences = getPreferenceValues<Preferences>();
+#### Key Features
+- **Dual-page architecture**: Form for input, Detail for response
+- **Real-time streaming**: Updates UI as AI generates response
+- **File attachment support**: Drag-and-drop or file picker
+- **Action panel integration**: Copy, regenerate, edit actions
+- **Loading states**: Proper feedback during AI processing
+
+### ChatRoom Component ([chatroom.tsx](mdc:src/core/chatroom.tsx))
+Interactive chat interface with persistent conversation context:
+
+```typescript
+export default function ChatRoom({ aiConfig }: ChatRoomProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [inputText, setInputText] = useState("");
   
-  // Event handlers
-  const handleSubmit = useCallback(async (input: string) => {
-    // Implementation
-  }, [model]);
-  
-  // Effects
-  useEffect(() => {
-    if (initialInput) {
-      handleSubmit(initialInput);
+  // Chat-specific features
+  const sendMessage = async (messageText: string) => {
+    // Add user message
+    const userMessage: ChatMessage = {
+      id: generateId(),
+      timestamp: Date.now(),
+      role: "user",
+      content: messageText,
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    
+    // Stream AI response
+    const provider = createAIProvider(aiConfig);
+    const response = provider.sendRequest(aiConfig, conversationContext);
+    
+    // Update UI in real-time
+    for await (const chunk of response) {
+      if (chunk.text) {
+        updateMessage(assistantMessageId, responseText, true);
+      }
     }
-  }, [initialInput, handleSubmit]);
+  };
   
-  // Render
   return (
-    <Detail
-      isLoading={state?.isLoading}
-      markdown={state?.response || ""}
-      actions={<ActionPanel>{/* Actions */}</ActionPanel>}
-    />
+    <List>
+      {messages.map(message => (
+        <List.Item
+          key={message.id}
+          title={message.content}
+          subtitle={message.role === "user" ? "You" : aiConfig.model.modelNameUser}
+          accessories={[
+            { text: formatDate(new Date(message.timestamp)) },
+            message.requestStats && { text: renderStats(message.requestStats) }
+          ]}
+        />
+      ))}
+    </List>
   );
 }
 ```
 
-### Component Naming
-```typescript
-// ✅ Описательные имена компонентов
-export default function AIResponseViewer() {}
-export default function TokenCountDisplay() {}
-export default function ModelSelector() {}
+#### Key Features
+- **Message history**: Persistent conversation context
+- **Real-time updates**: Streaming responses with live updates
+- **Context management**: Configurable history length
+- **Statistics integration**: Token usage and cost tracking
+- **Rich message display**: User/AI differentiation with timestamps
 
-// ❌ Слишком общие имена
-export default function Component() {}
-export default function Handler() {}
+### History Component ([history.tsx](mdc:src/history.tsx))
+Command history management with search and filtering:
+
+```typescript
+export default function History() {
+  const { history, deleteHistoryItem, clearHistory } = useCommandHistory();
+  const [searchText, setSearchText] = useState("");
+  
+  const filteredHistory = history.filter(item => 
+    item.query.toLowerCase().includes(searchText.toLowerCase()) ||
+    item.response.toLowerCase().includes(searchText.toLowerCase())
+  );
+  
+  return (
+    <List
+      searchBarPlaceholder="Search command history..."
+      onSearchTextChange={setSearchText}
+    >
+      {filteredHistory.map(item => (
+        <List.Item
+          key={item.timestamp}
+          title={item.query}
+          subtitle={getCmd(item.actionName).name}
+          accessories={[
+            { text: formatDate(new Date(item.timestamp)) },
+            { text: renderStats(item.requestStats) }
+          ]}
+          actions={
+            <ActionPanel>
+              <Action.CopyToClipboard content={item.response} />
+              <Action.Push
+                title="View Details"
+                target={<Detail markdown={formatMarkdown(item)} />}
+              />
+              <Action
+                title="Delete"
+                onAction={() => deleteHistoryItem(item.timestamp)}
+                style={Action.Style.Destructive}
+              />
+            </ActionPanel>
+          }
+        />
+      ))}
+    </List>
+  );
+}
+```
+
+### Stats Component ([stats.tsx](mdc:src/stats.tsx))
+Usage statistics and cost analysis with multiple views:
+
+```typescript
+export default function StatsCommand() {
+  const { getHistoryStats, getDetailedStats } = useCommandHistory();
+  const [selectedCategory, setSelectedCategory] = useState("period-today");
+  
+  const categories = [
+    {
+      id: "period-today",
+      title: "Today",
+      markdownStats: formatDetailedStatsMarkdown("Today", todayStats, "Commands:", todayCommands),
+    },
+    {
+      id: "period-week",
+      title: "This week",
+      markdownStats: formatDetailedStatsMarkdown("This week", weekStats, "Commands:", weekCommands),
+    },
+    // ... more categories
+  ];
+  
+  return (
+    <List>
+      {categories.map(category => (
+        <List.Item
+          key={category.id}
+          title={category.title}
+          actions={
+            <ActionPanel>
+              <Action.Push
+                title="View Details"
+                target={<Detail markdown={category.markdownStats} />}
+              />
+            </ActionPanel>
+          }
+        />
+      ))}
+    </List>
+  );
+}
 ```
 
 ## State Management Patterns
 
-### Local State
+### Loading States
 ```typescript
-// ✅ Описательные состояния
-interface AIState {
-  isLoading: boolean;
-  response: string | null;
-  error: string | null;
-  usage: TokenUsage | null;
-}
+// Standard loading pattern
+const [isLoading, setIsLoading] = useState(true);
 
-const [aiState, setAIState] = useState<AIState>({
-  isLoading: false,
-  response: null,
-  error: null,
-  usage: null
+// Show loading toast
+await showToast({
+  style: Toast.Style.Animated,
+  title: `${aiConfig.model.modelNameUser} is thinking...`,
 });
 
-// ✅ Atomic updates
-setAIState(prev => ({ ...prev, isLoading: true, error: null }));
+// Update loading state
+setIsLoading(false);
 ```
 
-### Effect Management
+### Streaming Updates
 ```typescript
-// ✅ Оптимизированные эффекты
-useEffect(() => {
-  let cancelled = false;
-  
-  async function processRequest() {
-    if (cancelled) return;
-    
-    try {
-      const result = await aiProvider.process(input);
-      if (!cancelled) {
-        setAIState(prev => ({ 
-          ...prev, 
-          isLoading: false, 
-          response: result.content 
-        }));
-      }
-    } catch (error) {
-      if (!cancelled) {
-        setAIState(prev => ({ 
-          ...prev, 
-          isLoading: false, 
-          error: error.message 
-        }));
-      }
-    }
+// Real-time content updates
+const [renderedText, setRenderedText] = useState("");
+
+for await (const chunk of response) {
+  if (chunk.text) {
+    markdown += chunk.text;
+    setRenderedText(markdown); // Update UI immediately
   }
-  
-  if (input) {
-    processRequest();
-  }
-  
-  return () => { cancelled = true; };
-}, [input, aiProvider]);
+}
 ```
 
-## Raycast UI Patterns
-
-### Detail Component Patterns
+### Error Handling
 ```typescript
-// ✅ Богатый Detail с метаданными
+// User-friendly error display
+try {
+  const response = await aiProvider.sendRequest(config, query);
+} catch (error: any) {
+  await showToast({
+    style: Toast.Style.Failure,
+    title: "AI Request Failed",
+    message: error?.message || "Unknown error occurred",
+  });
+  
+  setIsLoading(false);
+}
+```
+
+## User Feedback Patterns
+
+### Toast Notifications
+```typescript
+// Success feedback
+await showToast({
+  style: Toast.Style.Success,
+  title: "Response Generated",
+  message: "Copied to clipboard",
+});
+
+// Progress feedback
+await showToast({
+  style: Toast.Style.Animated,
+  title: "Processing...",
+  message: "AI is analyzing your request",
+});
+
+// Error feedback
+await showToast({
+  style: Toast.Style.Failure,
+  title: "Error",
+  message: "Please check your API key configuration",
+});
+```
+
+### Loading Indicators
+```typescript
+// Detail component loading
 <Detail
   isLoading={isLoading}
   markdown={response}
-  metadata={
-    <Detail.Metadata>
-      <Detail.Metadata.Label title="Model" text={config.model} />
-      <Detail.Metadata.Label title="Tokens" text={`${usage?.totalTokens || 0}`} />
-      <Detail.Metadata.Label title="Cost" text={`$${usage?.cost.toFixed(4) || '0.0000'}`} />
-      <Detail.Metadata.Separator />
-      <Detail.Metadata.Label title="Provider" text={config.provider} />
-    </Detail.Metadata>
-  }
-  actions={
-    <ActionPanel>
-      <Action.CopyToClipboard 
-        title="Copy Response" 
-        content={response || ""} 
-        shortcut={{ modifiers: ["cmd"], key: "c" }}
-      />
-      <Action 
-        title="Regenerate" 
-        onAction={handleRegenerate}
-        shortcut={{ modifiers: ["cmd"], key: "r" }}
-      />
-      <Action 
-        title="New Chat" 
-        onAction={handleNewChat}
-        shortcut={{ modifiers: ["cmd"], key: "n" }}
-      />
-    </ActionPanel>
-  }
+  navigationTitle={navigationTitle}
+  actions={<ActionPanel>{/* actions */}</ActionPanel>}
 />
+
+// List component loading
+<List isLoading={isLoading}>
+  {items.map(item => (
+    <List.Item key={item.id} title={item.title} />
+  ))}
+</List>
 ```
 
-### Form Component Patterns
+### Progress Indicators
 ```typescript
-// ✅ Валидация и UX формы
+// Streaming progress
+showToast({ 
+  style: Toast.Style.Success, 
+  title: `Typing... (${Math.round(totalTime)}s)` 
+});
+
+// Token counting progress
+showToast({ 
+  style: Toast.Style.Animated, 
+  title: `Counting tokens... (${tokens} so far)` 
+});
+```
+
+## Action Panel Patterns
+
+### Standard Actions
+```typescript
+// Common action pattern for AI responses
+<ActionPanel>
+  <Action.CopyToClipboard content={response} />
+  <Action
+    title="Regenerate"
+    icon={Icon.ArrowClockwise}
+    onAction={() => regenerateResponse()}
+  />
+  <Action
+    title="Edit Prompt"
+    icon={Icon.Pencil}
+    onAction={() => setPage(PageState.Form)}
+  />
+  <Action.Push
+    title="View History"
+    icon={Icon.List}
+    target={<History />}
+  />
+</ActionPanel>
+```
+
+### Context-Specific Actions
+```typescript
+// Chat-specific actions
+<ActionPanel>
+  <Action
+    title="Send Message"
+    icon={Icon.Message}
+    onAction={() => sendMessage(inputText)}
+  />
+  <Action
+    title="Clear Chat"
+    icon={Icon.Trash}
+    style={Action.Style.Destructive}
+    onAction={() => clearMessages()}
+  />
+</ActionPanel>
+
+// Screenshot-specific actions
+<ActionPanel>
+  <Action
+    title="Take Screenshot"
+    icon={Icon.Camera}
+    onAction={() => takeScreenshot()}
+  />
+  <Action
+    title="Select Area"
+    icon={Icon.Crop}
+    onAction={() => selectScreenshotArea()}
+  />
+</ActionPanel>
+```
+
+## Form Patterns
+
+### Standard Form Layout
+```typescript
 <Form
-  isLoading={isProcessing}
   actions={
     <ActionPanel>
-      <Action.SubmitForm 
-        title="Ask AI" 
-        onSubmit={handleSubmit}
-        shortcut={{ modifiers: ["cmd"], key: "return" }}
+      <Action.SubmitForm onSubmit={handleSubmit} />
+    </ActionPanel>
+  }
+>
+  <Form.TextArea
+    id="query"
+    title="User Prompt"
+    value={textarea}
+    onChange={setTextarea}
+    placeholder={aiConfig.ui.placeholder}
+    autoFocus={true}
+  />
+  
+  {/* Conditional file picker */}
+  {!aiConfig.request.attachmentFile && (
+    <>
+      <Form.Description title="Attachment" text="You can attach image or file to analyze it." />
+      <Form.FilePicker 
+        id="file" 
+        title="" 
+        showHiddenFiles={true} 
+        allowMultipleSelection={false} 
       />
-      <Action 
-        title="Clear" 
-        onAction={handleClear}
-        shortcut={{ modifiers: ["cmd"], key: "k" }}
+    </>
+  )}
+  
+  <Form.Description
+    title=""
+    text={`Model: ${aiConfig.model.modelNameUser}; ${aiConfig.model.temperature}°`}
+  />
+</Form>
+```
+
+### Chat Input Form
+```typescript
+<Form
+  actions={
+    <ActionPanel>
+      <Action.SubmitForm
+        title="Send Message"
+        onSubmit={(values) => sendMessage(values.message)}
       />
     </ActionPanel>
   }
 >
   <Form.TextArea
-    id="input"
-    title="Your Question"
-    placeholder="What would you like to know?"
-    value={input}
-    onChange={setInput}
-    error={inputError}
-  />
-  
-  <Form.Dropdown
-    id="model"
-    title="AI Model"
-    value={selectedModel}
-    onChange={setSelectedModel}
-  >
-    {models.map(model => (
-      <Form.Dropdown.Item
-        key={model.id}
-        value={model.id}
-        title={model.name}
-        icon={model.provider === 'openai' ? '🤖' : '💎'}
-      />
-    ))}
-  </Form.Dropdown>
-  
-  <Form.TextField
-    id="temperature"
-    title="Temperature"
-    value={temperature}
-    onChange={setTemperature}
-    info="Higher values make output more creative"
+    id="message"
+    title=""
+    value={inputText}
+    onChange={setInputText}
+    placeholder={aiConfig.ui.placeholder}
+    autoFocus={true}
   />
 </Form>
 ```
 
-### List Component Patterns
+## List Patterns
+
+### Command History List
 ```typescript
-// ✅ Интерактивные списки с поиском
 <List
-  isLoading={isLoading}
-  searchBarPlaceholder="Search conversations..."
-  filtering
-  actions={
-    <ActionPanel>
-      <Action 
-        title="New Chat" 
-        onAction={handleNewChat}
-        shortcut={{ modifiers: ["cmd"], key: "n" }}
-      />
-    </ActionPanel>
-  }
+  searchBarPlaceholder="Search history..."
+  onSearchTextChange={setSearchText}
 >
-  {conversations.map(conversation => (
+  {filteredItems.map(item => (
     <List.Item
-      key={conversation.id}
-      title={conversation.title}
-      subtitle={conversation.preview}
+      key={item.id}
+      title={item.title}
+      subtitle={item.subtitle}
       accessories={[
-        { text: conversation.messageCount.toString() },
-        { date: new Date(conversation.updatedAt) }
+        { text: formatDate(item.timestamp) },
+        { text: formatCost(item.cost) }
       ]}
-      actions={
-        <ActionPanel>
-          <Action 
-            title="Open Chat" 
-            onAction={() => handleOpenChat(conversation.id)}
-          />
-          <Action 
-            title="Delete" 
-            onAction={() => handleDelete(conversation.id)}
-            style={Action.Style.Destructive}
-          />
-        </ActionPanel>
-      }
+      actions={<ActionPanel>{/* actions */}</ActionPanel>}
     />
   ))}
 </List>
 ```
 
-## Loading and Error States
-
-### Loading Indicators
+### Chat Message List
 ```typescript
-// ✅ Контекстуальные загрузочные состояния
-function LoadingDetail({ message }: { message: string }) {
-  return (
-    <Detail 
-      isLoading={true}
-      markdown={`# Processing...\n\n${message}`}
+<List>
+  {messages.map(message => (
+    <List.Item
+      key={message.id}
+      title={message.content}
+      subtitle={message.role === "user" ? "You" : modelName}
+      icon={message.role === "user" ? Icon.Person : Icon.Bot}
+      accessories={[
+        { text: formatTime(message.timestamp) },
+        message.isStreaming && { text: "Typing..." }
+      ]}
     />
-  );
-}
+  ))}
+</List>
+```
 
-// ✅ Прогресс для долгих операций
-function ProcessingDetail({ progress }: { progress: number }) {
-  const progressBar = '█'.repeat(Math.floor(progress / 5)) + 
-                      '░'.repeat(20 - Math.floor(progress / 5));
-  
-  return (
-    <Detail 
-      isLoading={true}
-      markdown={`# Processing Response\n\nProgress: ${progress}%\n\n\`${progressBar}\``}
-    />
-  );
+## Navigation Patterns
+
+### Page Navigation
+```typescript
+// Navigation title updates
+const [navigationTitle, setNavigationTitle] = useState("GemAI -> " + commandName);
+
+// Update based on state
+useEffect(() => {
+  if (isLoading) {
+    setNavigationTitle(`${commandName} - Processing...`);
+  } else {
+    setNavigationTitle(`${commandName} - Complete`);
+  }
+}, [isLoading]);
+```
+
+### Push Navigation
+```typescript
+// Push to detail view
+<Action.Push
+  title="View Details"
+  target={<Detail markdown={detailContent} />}
+/>
+
+// Push to list view
+<Action.Push
+  title="View History"
+  target={<History />}
+/>
+```
+
+## Responsive Design Patterns
+
+### Conditional UI Elements
+```typescript
+// Show/hide based on state
+{!isLoading && (
+  <Action
+    title="Regenerate"
+    onAction={() => regenerateResponse()}
+  />
+)}
+
+// Conditional form elements
+{aiConfig.ui.allowPaste && (
+  <Form.TextArea
+    id="pasteArea"
+    title="Paste Content"
+    placeholder="Paste your content here..."
+  />
+)}
+```
+
+### Dynamic Content
+```typescript
+// Dynamic accessories based on data
+const accessories = [
+  { text: formatDate(item.timestamp) },
+  item.cost > 0 && { text: formatCost(item.cost) },
+  item.tokens > 0 && { text: `${item.tokens} tokens` }
+].filter(Boolean);
+```
+
+## Accessibility Patterns
+
+### Keyboard Navigation
+```typescript
+// Keyboard shortcuts
+<Action
+  title="Regenerate"
+  icon={Icon.ArrowClockwise}
+  shortcut={Keyboard.Shortcut.Common.Refresh}
+  onAction={() => regenerateResponse()}
+/>
+
+// Auto-focus for better UX
+<Form.TextArea
+  id="query"
+  autoFocus={true}
+  placeholder={placeholder}
+/>
+```
+
+### Screen Reader Support
+```typescript
+// Descriptive titles and subtitles
+<List.Item
+  title={item.response.substring(0, 100) + "..."}
+  subtitle={`${commandName} - ${formatDate(item.timestamp)}`}
+  accessories={[
+    { text: `Cost: ${formatCost(item.cost)}` },
+    { text: `Tokens: ${item.tokens}` }
+  ]}
+/>
+```
+
+## Performance Optimization
+
+### Efficient Updates
+```typescript
+// Throttled UI updates for streaming
+let updateCount = 0;
+for await (const chunk of response) {
+  if (chunk.text) {
+    responseText += chunk.text;
+    updateCount++;
+    
+    // Update UI every 3 chunks or significant content
+    if (updateCount % 3 === 0 || responseText.length > updateCount * 10) {
+      updateMessage(messageId, responseText, true);
+    }
+  }
 }
 ```
 
-### Error Handling UI
+### Memory Management
 ```typescript
-// ✅ Информативные ошибки с действиями
-function ErrorDetail({ error, onRetry }: { error: Error; onRetry: () => void }) {
-  const errorMessage = `# Error\n\n**${error.name}**\n\n${error.message}`;
-  
+// Clean up resources
+useEffect(() => {
+  return () => {
+    // Clean up any ongoing streams or timers
+    if (streamRef.current) {
+      streamRef.current.cancel();
+    }
+  };
+}, []);
+```
+
+## Error Boundaries
+
+### Graceful Error Handling
+```typescript
+// Component-level error handling
+try {
+  return <MainComponent {...props} />;
+} catch (error) {
+  console.error("Component error:", error);
   return (
     <Detail
-      markdown={errorMessage}
+      markdown="# Error\n\nSomething went wrong. Please try again."
       actions={
         <ActionPanel>
-          <Action 
-            title="Retry" 
-            onAction={onRetry}
-            shortcut={{ modifiers: ["cmd"], key: "r" }}
-          />
-          <Action 
-            title="Report Issue" 
-            onAction={handleReportIssue}
+          <Action
+            title="Retry"
+            onAction={() => window.location.reload()}
           />
         </ActionPanel>
       }
@@ -309,133 +602,75 @@ function ErrorDetail({ error, onRetry }: { error: Error; onRetry: () => void }) 
 }
 ```
 
-## Toast Notifications
+## Testing UI Components
 
-### Contextual Toasts
+### Component Testing
 ```typescript
-// ✅ Информативные уведомления
-async function showProcessingToast(model: string) {
-  await showToast({
-    style: Toast.Style.Animated,
-    title: "Processing...",
-    message: `Using ${model}`
+// Test component rendering
+describe("GemAI Component", () => {
+  it("should render form initially", () => {
+    const mockConfig = createMockAIConfig();
+    const { getByPlaceholderText } = render(<GemAI {...mockConfig} />);
+    
+    expect(getByPlaceholderText("Enter your prompt...")).toBeInTheDocument();
   });
-}
-
-async function showSuccessToast(tokens: number, cost: number) {
-  await showToast({
-    style: Toast.Style.Success,
-    title: "Response Generated",
-    message: `${tokens} tokens • $${cost.toFixed(4)}`
+  
+  it("should show loading state", () => {
+    const mockConfig = createMockAIConfig();
+    const { getByText } = render(<GemAI {...mockConfig} />);
+    
+    // Trigger loading state
+    fireEvent.click(getByText("Submit"));
+    
+    expect(getByText("Processing...")).toBeInTheDocument();
   });
-}
-
-async function showErrorToast(error: Error) {
-  await showToast({
-    style: Toast.Style.Failure,
-    title: "Error",
-    message: error.message,
-    primaryAction: {
-      title: "Retry",
-      onAction: handleRetry
-    }
-  });
-}
+});
 ```
 
-## Accessibility and UX
-
-### Keyboard Shortcuts
+### Integration Testing
 ```typescript
-// ✅ Последовательные горячие клавиши
-const shortcuts = {
-  ask: { modifiers: ["cmd"], key: "return" },
-  copy: { modifiers: ["cmd"], key: "c" },
-  regenerate: { modifiers: ["cmd"], key: "r" },
-  newChat: { modifiers: ["cmd"], key: "n" },
-  clear: { modifiers: ["cmd"], key: "k" }
-} as const;
-```
-
-### Semantic Structure
-```typescript
-// ✅ Семантичная структура контента
-function formatAIResponse(content: string): string {
-  return `# AI Response\n\n${content}\n\n---\n\n*Generated by ${model}*`;
-}
-
-// ✅ Структурированные метаданные
-function formatMetadata(usage: TokenUsage, model: string): Detail.Metadata.Props {
-  return (
-    <Detail.Metadata>
-      <Detail.Metadata.Label title="Model" text={model} />
-      <Detail.Metadata.Separator />
-      <Detail.Metadata.Label 
-        title="Input Tokens" 
-        text={usage.inputTokens.toLocaleString()} 
-      />
-      <Detail.Metadata.Label 
-        title="Output Tokens" 
-        text={usage.outputTokens.toLocaleString()} 
-      />
-      <Detail.Metadata.Label 
-        title="Total Cost" 
-        text={`$${usage.cost.toFixed(4)}`} 
-      />
-    </Detail.Metadata>
+// Test user interactions
+it("should handle form submission", async () => {
+  const mockConfig = createMockAIConfig();
+  const { getByPlaceholderText, getByText } = render(<GemAI {...mockConfig} />);
+  
+  const input = getByPlaceholderText("Enter your prompt...");
+  fireEvent.change(input, { target: { value: "Test prompt" } });
+  
+  const submitButton = getByText("Submit");
+  fireEvent.click(submitButton);
+  
+  // Verify AI request was made
+  expect(mockAIProvider.sendRequest).toHaveBeenCalledWith(
+    expect.objectContaining({
+      query: "Test prompt"
+    })
   );
-}
-```
-
-## Performance Optimization
-
-### Memoization
-```typescript
-// ✅ Мемоизация дорогих вычислений
-const processedContent = useMemo(() => {
-  if (!response) return "";
-  return formatMarkdown(response);
-}, [response]);
-
-const actionPanel = useMemo(() => (
-  <ActionPanel>
-    <Action.CopyToClipboard content={response || ""} />
-    <Action title="Regenerate" onAction={handleRegenerate} />
-  </ActionPanel>
-), [response, handleRegenerate]);
-```
-
-### Lazy Loading
-```typescript
-// ✅ Ленивая загрузка тяжелых компонентов
-const TokenAnalyzer = lazy(() => import('./TokenAnalyzer'));
-const UsageStats = lazy(() => import('./UsageStats'));
-
-function ConditionalComponents({ showStats }: { showStats: boolean }) {
-  return (
-    <Suspense fallback={<Detail isLoading={true} />}>
-      {showStats && <UsageStats />}
-    </Suspense>
-  );
-}
+});
 ```
 
 ## Best Practices
 
-### Component Design
-- Создавайте переиспользуемые компоненты
-- Используйте композицию над наследованием
-- Следуйте принципу единственной ответственности
-- Минимизируйте props drilling
+### UI Consistency
+- Use consistent spacing and typography
+- Follow Raycast design patterns
+- Maintain consistent action placement
+- Use appropriate icons and colors
 
 ### User Experience
-- Всегда показывайте загрузочные состояния
-- Предоставляйте понятную обратную связь
-- Поддерживайте keyboard navigation
-- Реализуйте graceful error handling
+- Provide immediate feedback for all actions
+- Show progress for long-running operations
+- Handle errors gracefully with helpful messages
+- Support keyboard navigation
 
 ### Performance
-- Используйте мемоизацию для дорогих операций
-- Оитимизируйте re-renders с useCallback/useMemo
-- Применяйте lazy loading для больших компонентов
-- Минимизируйте bundle size
+- Optimize for smooth scrolling in lists
+- Throttle rapid updates during streaming
+- Clean up resources properly
+- Use efficient state management
+
+### Accessibility
+- Provide descriptive text for screen readers
+- Support keyboard navigation
+- Use appropriate contrast ratios
+- Test with accessibility tools

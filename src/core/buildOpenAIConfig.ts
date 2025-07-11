@@ -9,7 +9,7 @@ import {
 } from "./configUtils";
 
 // OpenAI reasoning models (o-series)
-const reasoningModels = ["o1-preview", "o1-mini"];
+const reasoningModels = ["o1-preview", "o1-mini", "o4-mini"];
 
 export function buildOpenAIConfig(actionName: string, props: RaycastProps, fallbackPrompt?: string): AIConfig {
   const prefs = getConfigPreferences();
@@ -18,7 +18,9 @@ export function buildOpenAIConfig(actionName: string, props: RaycastProps, fallb
   const [isCustomPrompt, realSystemPrompt] = buildRealPrompt(actionName, prefs, fallbackPrompt);
 
   // Configure reasoning for o-series models
-  const isReasoningModel = reasoningModels.includes(currentModelName) || currentModelName.startsWith("o1");
+  const isReasoningModel = reasoningModels.includes(currentModelName) || 
+                          currentModelName.startsWith("o1") || 
+                          currentModelName.startsWith("o4");
   const modelInfo = getModelInfo(currentModelName, prefs);
   const thinkingConfig =
     isReasoningModel && modelInfo
