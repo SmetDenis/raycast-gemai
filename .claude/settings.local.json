@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(npx ts-node generate-package.ts)"
-    ],
-    "deny": []
-  }
-}
