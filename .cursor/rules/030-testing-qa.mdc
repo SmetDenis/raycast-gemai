@@ -1,3 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
 # Testing & Quality Assurance Rules
 
 ## Testing Strategy Overview

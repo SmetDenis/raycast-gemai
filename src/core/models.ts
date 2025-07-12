@@ -132,16 +132,6 @@ export const allModels: Record<string, ModelInfo> = {
     provider: "gemini",
     supportsVision: true,
   },
-  "gemini-2.0-flash-lite": {
-    id: "gemini-2.0-flash-lite",
-    name: "2.0 Flash-Lite",
-    price_input: 0.075,
-    price_output: 0.3,
-    price_output_thinking: 0.3,
-    thinking_budget: 0,
-    provider: "gemini",
-    supportsVision: true,
-  },
   "gemini-2.0-flash": {
     id: "gemini-2.0-flash",
     name: "2.0 Flash",
@@ -151,39 +141,7 @@ export const allModels: Record<string, ModelInfo> = {
     thinking_budget: 0,
     provider: "gemini",
     supportsVision: true,
-  },
-  
-  // Gemini Models (Legacy - for backward compatibility)
-  "gemini-2.5-flash-preview-04-17": {
-    id: "gemini-2.5-flash-preview-04-17",
-    name: "2.5 Flash (Legacy)",
-    price_input: 0.15,
-    price_output: 0.6,
-    price_output_thinking: 3.5,
-    thinking_budget: 0,
-    provider: "gemini",
-    supportsVision: true,
-  },
-  "gemini-2.5-flash-preview-04-17__thinking": {
-    id: "gemini-2.5-flash-preview-04-17",
-    name: "2.5 Flash Thinking (Legacy)",
-    price_input: 0.15,
-    price_output: 0.6,
-    price_output_thinking: 3.5,
-    thinking_budget: 2000,
-    provider: "gemini",
-    supportsVision: true,
-  },
-  "gemini-2.5-pro-preview-05-06": {
-    id: "gemini-2.5-pro-preview-05-06",
-    name: "2.5 Pro (Legacy)",
-    price_input: 1.25,
-    price_output: 10,
-    price_output_thinking: 10,
-    thinking_budget: 4000,
-    provider: "gemini",
-    supportsVision: true,
-  },
+  }, 
   
   // OpenAI Models (Stable - January 2025)
   "gpt-4.1": {

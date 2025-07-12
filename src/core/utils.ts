@@ -23,10 +23,30 @@ export function getSystemPrompt(promptPath: string | undefined, defaultPrompt?: 
   let finalPrompt = "";
 
   if (resolvedPath && fs.existsSync(resolvedPath)) {
-    finalPrompt = fs.readFileSync(resolvedPath, "utf8");
+    let fileContent = fs.readFileSync(resolvedPath, "utf8");
+    
     // Remove YAML frontmatter if present
-    finalPrompt = finalPrompt.replace(/^---[\s\S]*?---\s*/, "");
-    finalPrompt = finalPrompt.trim() + "\n";
+    fileContent = fileContent.replace(/^---[\s\S]*?---\s*/, "");
+    
+    // Try to extract prompt from markdown code block after "System Prompt" or "Prompt" heading
+    // Pattern explanation:
+    // - ##?\s* - matches ## or # followed by optional whitespace
+    // - (?:system\s+)?prompt - matches "system prompt" or just "prompt" (case insensitive)
+    // - \s*\n+ - matches whitespace and one or more newlines
+    // - ```(?:markdown)?\s*\n - matches opening code block (with optional "markdown" language)
+    // - ([\s\S]*?) - captures the prompt content (non-greedy)
+    // - \n\s*``` - matches closing code block
+    const markdownPromptMatch = fileContent.match(/##?\s*(?:system\s+)?prompt\s*\n+```(?:markdown)?\s*\n([\s\S]*?)\n\s*```/i);
+    
+    if (markdownPromptMatch) {
+      // Extract and clean the prompt from markdown code block
+      finalPrompt = markdownPromptMatch[1].trim();
+    } else {
+      // Use the entire file content as prompt (original behavior)
+      finalPrompt = fileContent.trim();
+    }
+    
+    finalPrompt = finalPrompt + "\n";
   } else if (defaultPrompt) {
     finalPrompt = defaultPrompt.trim() + "\n";
   }
