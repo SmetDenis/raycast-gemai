@@ -1,24 +1,19 @@
 import { HarmBlockThreshold, HarmCategory } from "@google/genai";
-import { allModels, getModelInfo } from "./models";
-import { GemAIConfig, RaycastProps } from "./types";
 import {
   buildRealPrompt,
-  getCurrentModel,
-  getTemperature,
   getConfigPreferences,
+  getCurrentModel,
   getHistoryMessagesCount,
+  getTemperature,
 } from "./configUtils";
+import { getModelInfo } from "./models";
+import { GemAIConfig, RaycastProps } from "./types";
 
 const thinkingModels = [
   // Stable models (January 2025)
   "gemini-2.5-flash",
   "gemini-2.5-flash-lite",
   "gemini-2.5-pro",
-  
-  // Legacy models (for backward compatibility)
-  "gemini-2.5-flash-preview-04-17",
-  "gemini-2.5-flash-preview-04-17__thinking",
-  "gemini-2.5-pro-preview-05-06",
 ];
 
 export function buildGemAIConfig(actionName: string, props: RaycastProps, fallbackPrompt?: string): GemAIConfig {
@@ -71,6 +66,7 @@ export function buildGemAIConfig(actionName: string, props: RaycastProps, fallba
       historyMessagesCount: getHistoryMessagesCount(prefs),
     };
   }
+  console.log(config);
 
   return config;
 }

@@ -1,8 +1,6 @@
 import { Action, ActionPanel, Detail, Form, getSelectedText, Icon, Keyboard, showToast, Toast } from "@raycast/api";
 import * as fs from "fs";
-import * as path from "path";
 import React, { useEffect, useState } from "react";
-import { buildAIConfig } from "./buildAIConfig";
 import { createAIProvider } from "./aiProvider";
 import { getCmd } from "./commands";
 import { useCommandHistory } from "./history";
@@ -40,14 +38,8 @@ export default function GemAI(aiConfig: AIConfig) {
     try {
       const provider = createAIProvider(aiConfig);
       const actualFilePath = attachmentFile || aiConfig.request.attachmentFile;
-
-      const attachmentPrepStart = Date.now();
       const attachment = await provider.prepareAttachment(actualFilePath);
-      const attachmentPrepTime = (Date.now() - attachmentPrepStart) / 1000;
-
-      const requestStart = Date.now();
       const response = provider.sendRequest(aiConfig, query, attachment);
-      const requestInitTime = (Date.now() - requestStart) / 1000;
 
       let markdown = "";
       let usageMetadata: any = undefined;
@@ -82,8 +74,6 @@ export default function GemAI(aiConfig: AIConfig) {
         showToast({ style: Toast.Style.Success, title: `Typing...` });
       }
 
-      const streamEndTime = Date.now();
-      const totalStreamTime = (streamEndTime - startTime) / 1000;
 
       // Get final token stats - always call this, not just when query exists
       requestStats = await provider.getTokenStats(aiConfig, usageMetadata, query || "", attachment);

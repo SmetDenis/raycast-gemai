@@ -32,68 +32,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -103,7 +59,7 @@
           "description": "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
           "type": "textfield",
           "required": false,
-          "default": "0.1"
+          "default": "0.2"
         },
         {
           "name": "promptFile",
@@ -134,68 +90,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -205,7 +117,7 @@
           "description": "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
           "type": "textfield",
           "required": false,
-          "default": "0.1"
+          "default": "0.2"
         },
         {
           "name": "promptFile",
@@ -244,68 +156,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         }
@@ -338,68 +206,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -409,7 +233,7 @@
           "description": "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
           "type": "textfield",
           "required": false,
-          "default": "0.1"
+          "default": "0.2"
         },
         {
           "name": "promptFile",
@@ -440,68 +264,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -542,68 +322,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -621,7 +357,7 @@
           "description": "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
           "type": "textfield",
           "required": false,
-          "default": "0.1"
+          "default": "0.2"
         },
         {
           "name": "promptFile",
@@ -659,68 +395,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -761,68 +453,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -863,68 +511,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -934,7 +538,7 @@
           "description": "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
           "type": "textfield",
           "required": false,
-          "default": "0.1"
+          "default": "0.2"
         },
         {
           "name": "promptFile",
@@ -965,68 +569,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -1067,68 +627,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -1138,7 +654,7 @@
           "description": "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
           "type": "textfield",
           "required": false,
-          "default": "0.1"
+          "default": "0.2"
         },
         {
           "name": "promptFile",
@@ -1169,68 +685,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -1240,7 +712,7 @@
           "description": "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
           "type": "textfield",
           "required": false,
-          "default": "0.1"
+          "default": "0.2"
         },
         {
           "name": "promptFile",
@@ -1271,68 +743,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -1350,7 +778,7 @@
           "description": "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
           "type": "textfield",
           "required": false,
-          "default": "0.1"
+          "default": "0.2"
         },
         {
           "name": "promptFile",
@@ -1381,68 +809,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -1490,68 +874,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -1561,7 +901,7 @@
           "description": "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
           "type": "textfield",
           "required": false,
-          "default": "0.1"
+          "default": "0.2"
         },
         {
           "name": "promptFile",
@@ -1600,68 +940,24 @@
               "value": "default"
             },
             {
-              "title": "Gemini 2.5 Flash",
+              "title": "gemini 2.5 Flash",
               "value": "gemini-2.5-flash"
             },
             {
-              "title": "Gemini 2.5 Flash-Lite",
-              "value": "gemini-2.5-flash-lite"
+              "title": "gemini 2.5 Flash (thinking)",
+              "value": "gemini-2.5-flash__thinking"
             },
             {
-              "title": "Gemini 2.5 Pro",
+              "title": "gemini 2.5 Pro",
               "value": "gemini-2.5-pro"
             },
             {
-              "title": "Gemini 2.0 Flash-Lite",
-              "value": "gemini-2.0-flash-lite"
-            },
-            {
-              "title": "Gemini 2.0 Flash",
-              "value": "gemini-2.0-flash"
-            },
-            {
-              "title": "Gemini 2.5 Flash (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17"
-            },
-            {
-              "title": "Gemini 2.5 Flash Thinking (Legacy)",
-              "value": "gemini-2.5-flash-preview-04-17__thinking"
-            },
-            {
-              "title": "Gemini 2.5 Pro (Legacy)",
-              "value": "gemini-2.5-pro-preview-05-06"
-            },
-            {
-              "title": "OpenAI GPT-4.1",
-              "value": "gpt-4.1"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Mini",
-              "value": "gpt-4.1-mini"
-            },
-            {
-              "title": "OpenAI GPT-4.1 Nano",
-              "value": "gpt-4.1-nano"
-            },
-            {
-              "title": "OpenAI GPT-4o",
-              "value": "gpt-4o"
-            },
-            {
-              "title": "OpenAI GPT-4o-mini",
-              "value": "gpt-4o-mini"
-            },
-            {
-              "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-              "value": "o1-preview"
-            },
-            {
-              "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-              "value": "o1-mini"
-            },
-            {
-              "title": "OpenAI o4-mini (Reasoning)",
+              "title": "openai o4-mini",
               "value": "o4-mini"
+            },
+            {
+              "title": " Custom",
+              "value": "custom"
             }
           ]
         },
@@ -1679,7 +975,7 @@
           "description": "Lower temperatures yield deterministic responses (0 is fully deterministic), while higher temperatures produce diverse results. Max value is 2.0",
           "type": "textfield",
           "required": false,
-          "default": "0.1"
+          "default": "0.2"
         },
         {
           "name": "promptFile",
@@ -1708,14 +1004,6 @@
       "required": false
     },
     {
-      "name": "openaiBaseUrl",
-      "title": "OpenAI Base URL (Optional)",
-      "description": "Custom OpenAI API base URL. Leave blank to use default OpenAI endpoint. Useful for Azure OpenAI, proxies, or alternative providers.",
-      "type": "textfield",
-      "required": false,
-      "default": ""
-    },
-    {
       "description": "Which model for Raycast uses by default (unless overriden by individual commands).",
       "name": "defaultModel",
       "title": "Default Model",
@@ -1724,91 +1012,26 @@
       "default": "gemini-2.5-flash",
       "data": [
         {
-          "title": "Gemini 2.5 Flash",
+          "title": "gemini 2.5 Flash",
           "value": "gemini-2.5-flash"
         },
         {
-          "title": "Gemini 2.5 Flash-Lite",
-          "value": "gemini-2.5-flash-lite"
+          "title": "gemini 2.5 Flash (thinking)",
+          "value": "gemini-2.5-flash__thinking"
         },
         {
-          "title": "Gemini 2.5 Pro",
+          "title": "gemini 2.5 Pro",
           "value": "gemini-2.5-pro"
         },
         {
-          "title": "Gemini 2.0 Flash-Lite",
-          "value": "gemini-2.0-flash-lite"
-        },
-        {
-          "title": "Gemini 2.0 Flash",
-          "value": "gemini-2.0-flash"
-        },
-        {
-          "title": "Gemini 2.5 Flash (Legacy)",
-          "value": "gemini-2.5-flash-preview-04-17"
-        },
-        {
-          "title": "Gemini 2.5 Flash Thinking (Legacy)",
-          "value": "gemini-2.5-flash-preview-04-17__thinking"
-        },
-        {
-          "title": "Gemini 2.5 Pro (Legacy)",
-          "value": "gemini-2.5-pro-preview-05-06"
-        },
-        {
-          "title": "OpenAI GPT-4.1",
-          "value": "gpt-4.1"
-        },
-        {
-          "title": "OpenAI GPT-4.1 Mini",
-          "value": "gpt-4.1-mini"
-        },
-        {
-          "title": "OpenAI GPT-4.1 Nano",
-          "value": "gpt-4.1-nano"
-        },
-        {
-          "title": "OpenAI GPT-4o",
-          "value": "gpt-4o"
-        },
-        {
-          "title": "OpenAI GPT-4o-mini",
-          "value": "gpt-4o-mini"
-        },
-        {
-          "title": "OpenAI o1-preview (Reasoning) (Text-only)",
-          "value": "o1-preview"
-        },
-        {
-          "title": "OpenAI o1-mini (Reasoning) (Text-only)",
-          "value": "o1-mini"
-        },
-        {
-          "title": "OpenAI o4-mini (Reasoning)",
+          "title": "openai o4-mini",
           "value": "o4-mini"
+        },
+        {
+          "title": " Custom",
+          "value": "custom"
         }
       ]
-    },
-    {
-      "name": "customModel",
-      "title": "Custom Model",
-      "description": "If you are using a specific model not found in the dropdown list, configure a custom model. This selection will override the default model. If you do not have a custom model, leave this field blank.",
-      "type": "textfield",
-      "required": false
-    },
-    {
-      "name": "customModelInputPrice",
-      "title": "Custom Model Input Price",
-      "description": "Price per 1M input tokens for your custom model (in USD). Example: 2.5 for $2.50 per 1M tokens. Leave blank for default estimation.",
-      "type": "textfield",
-      "required": false
-    },
-    {
-      "name": "customModelOutputPrice",
-      "title": "Custom Model Output Price",
-      "description": "Price per 1M output tokens for your custom model (in USD). Example: 10.0 for $10.00 per 1M tokens. Leave blank for default estimation.",
-      "type": "textfield",
-      "required": false
     },
     {
       "name": "primaryLanguage",

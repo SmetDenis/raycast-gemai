@@ -4,8 +4,8 @@ import * as fs from "fs";
 import mime from "mime-types";
 import OpenAI from "openai";
 import * as path from "path";
+import { getModelInfo } from "./models";
 import { AIConfig, RequestStats } from "./types";
-import { allModels, getModelInfo } from "./models";
 
 // Universal AI Provider interface
 export interface AIProvider {
@@ -237,19 +237,10 @@ export class OpenAIProvider implements AIProvider {
       },
     };
 
-    // Reasoning models (o1-series) have specific parameter limitations
-    if (!isFinalReasoningModel) {
-      // Regular models use max_tokens
-      requestParams.max_tokens = config.model.maxOutputTokens;
-      requestParams.temperature = config.model.temperature;
-      requestParams.top_p = config.model.topP;
-      requestParams.frequency_penalty = config.model.frequencyPenalty;
-      requestParams.presence_penalty = config.model.presencePenalty;
-    } else {
-      // Reasoning models use max_completion_tokens instead of max_tokens
-      requestParams.max_completion_tokens = config.model.maxOutputTokens;
-      requestParams.temperature = 1; // Fixed temperature for reasoning models
-    }
+    requestParams.temperature = config.model.temperature;
+    requestParams.top_p = config.model.topP;
+    requestParams.frequency_penalty = config.model.frequencyPenalty;
+    requestParams.presence_penalty = config.model.presencePenalty;
 
     const response = (await this.client.chat.completions.create(requestParams)) as any;
 

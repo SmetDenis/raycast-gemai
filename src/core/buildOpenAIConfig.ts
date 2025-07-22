@@ -1,12 +1,12 @@
-import { allModels, getModelInfo } from "./models";
-import { AIConfig, RaycastProps } from "./types";
 import {
   buildRealPrompt,
-  getCurrentModel,
-  getTemperature,
   getConfigPreferences,
+  getCurrentModel,
   getHistoryMessagesCount,
+  getTemperature,
 } from "./configUtils";
+import { getModelInfo } from "./models";
+import { AIConfig, RaycastProps } from "./types";
 
 // OpenAI reasoning models (o-series)
 const reasoningModels = ["o1-preview", "o1-mini", "o4-mini"];
@@ -73,6 +73,8 @@ export function buildOpenAIConfig(actionName: string, props: RaycastProps, fallb
       historyMessagesCount: getHistoryMessagesCount(prefs),
     };
   }
+
+  console.log(config);
 
   return config;
 }

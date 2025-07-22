@@ -24,7 +24,6 @@ import {
 import {
   allModels,
   DEFAULT_MODEL,
-  DEFAULT_OPENAI_MODEL,
   DEFAULT_TEMP,
   DEFAULT_TEMP_ARTIST,
   DEFAULT_TEMP_CREATIVE
@@ -36,12 +35,8 @@ function capitalizeFirstLetter(str: string): string {
 }
 
 const models = Object.entries(allModels).map(([key, model]) => {
-  const providerPrefix = model.provider === 'openai' ? 'OpenAI' : 'Gemini';
-  const visionSuffix = model.supportsVision === false ? ' (Text-only)' : '';
-  return {
-    title: `${providerPrefix} ${model.name}${visionSuffix}`,
-    value: key,
-  };
+  const providerPrefix = model.provider === 'custom' ? '' : model.provider;
+  return {title: `${providerPrefix} ${model.name}`, value: key};
 });
 
 models.unshift({title: "Default", value: "default"});
@@ -292,14 +287,6 @@ const rootPreferences = [
     required: false,
   },
   {
-    name: "openaiBaseUrl",
-    title: "OpenAI Base URL (Optional)",
-    description: "Custom OpenAI API base URL. Leave blank to use default OpenAI endpoint. Useful for Azure OpenAI, proxies, or alternative providers.",
-    type: "textfield",
-    required: false,
-    default: "",
-  },
-  {
     description: "Which model for Raycast uses by default (unless overriden by individual commands).",
     name: "defaultModel",
     title: "Default Model",
@@ -307,27 +294,6 @@ const rootPreferences = [
     required: true,
     default: DEFAULT_MODEL,
     data: models.slice(1), // без "Default"
-  },
-  {
-    name: "customModel",
-    title: "Custom Model",
-    description: "If you are using a specific model not found in the dropdown list, configure a custom model. This selection will override the default model. If you do not have a custom model, leave this field blank.",
-    type: "textfield",
-    required: false,
-  },
-  {
-    name: "customModelInputPrice",
-    title: "Custom Model Input Price",
-    description: "Price per 1M input tokens for your custom model (in USD). Example: 2.5 for $2.50 per 1M tokens. Leave blank for default estimation.",
-    type: "textfield",
-    required: false,
-  },
-  {
-    name: "customModelOutputPrice",
-    title: "Custom Model Output Price", 
-    description: "Price per 1M output tokens for your custom model (in USD). Example: 10.0 for $10.00 per 1M tokens. Leave blank for default estimation.",
-    type: "textfield",
-    required: false,
   },
   {
     name: "primaryLanguage",
