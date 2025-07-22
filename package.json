@@ -46,10 +46,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -104,10 +100,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -170,10 +162,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         }
@@ -220,10 +208,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -278,10 +262,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -336,10 +316,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -409,10 +385,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -467,10 +439,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -525,10 +493,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -583,10 +547,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -641,10 +601,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -699,10 +655,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -757,10 +709,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -823,10 +771,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -888,10 +832,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -954,10 +894,6 @@
             {
               "title": "openai o4-mini",
               "value": "o4-mini"
-            },
-            {
-              "title": " Custom",
-              "value": "custom"
             }
           ]
         },
@@ -1026,10 +962,6 @@
         {
           "title": "openai o4-mini",
           "value": "o4-mini"
-        },
-        {
-          "title": " Custom",
-          "value": "custom"
         }
       ]
     },

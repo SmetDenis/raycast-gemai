@@ -100,14 +100,4 @@ export const allModels: Record<string, ModelInfo> = {
     thinking_budget: 32768, // 32K thinking tokens budget for reasoning model
     provider: "openai",
   },
-
-  "custom": {
-    id: "custom",
-    name: "Custom",
-    price_input: 1,
-    price_output: 1,
-    price_output_thinking: 1,
-    thinking_budget: 32768, // 32K thinking tokens budget for reasoning model
-    provider: "custom",
-  },
 };
