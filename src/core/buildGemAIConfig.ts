@@ -66,7 +66,6 @@ export function buildGemAIConfig(actionName: string, props: RaycastProps, fallba
       historyMessagesCount: getHistoryMessagesCount(prefs),
     };
   }
-  console.log(config);
 
   return config;
 }

@@ -74,7 +74,5 @@ export function buildOpenAIConfig(actionName: string, props: RaycastProps, fallb
     };
   }
 
-  console.log(config);
-
   return config;
 }

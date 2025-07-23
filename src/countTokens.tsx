@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { useEffect, useState } from "react";
 import { createAIProvider } from "./core/aiProvider";
 import { buildAIConfig } from "./core/buildAIConfig";
-import { getCmd, CMD_COUNT_TOKENS } from "./core/commands";
+import { CMD_COUNT_TOKENS, getCmd } from "./core/commands";
 
 export default function CountTokens() {
   const PageState = { Form: 0, Response: 1 };
@@ -15,7 +15,6 @@ export default function CountTokens() {
   const [navigationTitle] = useState("GemAI -> Count Tokens");
 
   const countTokens = async (text?: string, attachmentFile?: string) => {
-    console.log("[CountTokens] Starting with:", { text: text?.substring(0, 100), attachmentFile });
 
     setPage(PageState.Response);
     setIsLoading(true);
@@ -41,7 +40,6 @@ export default function CountTokens() {
       let contentInfo = "";
 
       if (attachmentFile && fs.existsSync(attachmentFile) && fs.lstatSync(attachmentFile).isFile()) {
-        console.log("[CountTokens] Processing file:", attachmentFile);
 
         // For token counting, we can read file content as text instead of using API upload
         // This works for text files, code files, etc.
@@ -54,10 +52,7 @@ export default function CountTokens() {
           const fileSize = fs.statSync(attachmentFile).size;
           contentInfo = `**Content:** Text + File (${fileName}, ${fileSize} bytes)\n\n`;
 
-          console.log("[CountTokens] File read as text, counting tokens for combined content");
         } catch (fileError: any) {
-          console.log("[CountTokens] Failed to read as text, trying attachment method:", fileError.message);
-
           // Fallback: try to use provider's attachment method (for images, etc.)
           try {
             const attachment = await provider.prepareAttachment(attachmentFile);
