@@ -2,7 +2,7 @@ import { SafetySetting } from "@google/genai";
 
 // Universal AI configuration interface
 export interface AIConfig {
-  provider: "gemini" | "openai";
+  provider: string;
   request: {
     actionName: string;
     origProps: object;

@@ -14,7 +14,7 @@ const UTILITY_COMMANDS = [CMD_COUNT_TOKENS, CMD_HISTORY, CMD_STATS];
 /**
  * Creates a minimal AI configuration for utility commands
  */
-function buildUtilityConfig(actionName: string, props: RaycastProps, provider: "openai" | "gemini"): AIConfig {
+function buildUtilityConfig(actionName: string, props: RaycastProps, provider: string): AIConfig {
   const prefs = getConfigPreferences();
   const currentModelName = getCurrentModel(prefs);
   const modelInfo = getModelInfo(currentModelName, prefs);
